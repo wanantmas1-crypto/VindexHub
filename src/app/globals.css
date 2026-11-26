@@ -1,0 +1,102 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --surface-alt: #eff6ff;
+  --text: #0f172a;
+  --muted: #475569;
+  --border: #e2e8f0;
+  --primary: #1d4ed8;
+  --primary-fg: #ffffff;
+  --success: #15803d;
+  --warning: #b45309;
+  --danger: #b91c1c;
+  color-scheme: light;
+}
+
+.dark {
+  --bg: #0b1220;
+  --surface: #111827;
+  --surface-alt: #172554;
+  --text: #f1f5f9;
+  --muted: #94a3b8;
+  --border: #243041;
+  --primary: #3b82f6;
+  --primary-fg: #ffffff;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-alt: var(--surface-alt);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-fg: var(--primary-fg);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  border-color: var(--border);
+}
+
+::selection {
+  background: color-mix(in oklab, var(--primary) 25%, transparent);
+}
+
+.dark :where(
+  .text-black,
+  .text-slate-700,
+  .text-slate-800,
+  .text-slate-900,
+  .text-slate-950,
+  .text-gray-700,
+  .text-gray-800,
+  .text-gray-900,
+  .text-gray-950,
+  .text-zinc-700,
+  .text-zinc-800,
+  .text-zinc-900,
+  .text-zinc-950,
+  .text-neutral-700,
+  .text-neutral-800,
+  .text-neutral-900,
+  .text-neutral-950
+):not([class*="dark:text-"]) {
+  color: var(--text) !important;
+}
+
+.dark [style*="color:black"],
+.dark [style*="color: black"],
+.dark [style*="color:#000"],
+.dark [style*="color: #000"],
+.dark [style*="color:#111"],
+.dark [style*="color: #111"],
+.dark [style*="color:rgb(0,0,0)"],
+.dark [style*="color: rgb(0, 0, 0)"] {
+  color: var(--text) !important;
+}
+
