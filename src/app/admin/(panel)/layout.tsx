@@ -1,5 +1,8 @@
 import Link from "next/link";
+import Image from "next/image";
 import { adminLogout } from "@/lib/admin-actions";
+import { getSiteSettings } from "@/lib/data";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { LayoutDashboard, Package, Wrench, FolderKanban, Star, Inbox, ShoppingCart, LogOut, Tags, Settings, BarChart3 } from "lucide-react";
 
 const nav = [
@@ -15,13 +18,21 @@ const nav = [
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  const settings = await getSiteSettings();
+  const logoUrl = settings.logoUrl || "/vindex-logo.svg";
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900/40 lg:grid lg:grid-cols-[240px_1fr]">
       <aside className="border-b border-border bg-surface lg:border-b-0 lg:border-r">
-        <div className="flex items-center justify-between px-5 py-4">
-          <Link href="/admin" className="font-semibold"><span className="text-primary">Vindex</span> Admin</Link>
-          <Link href="/" className="text-xs text-muted hover:text-text lg:hidden">Site</Link>
+        <div className="flex items-center justify-between gap-3 px-5 py-4">
+          <Link href="/admin" className="flex items-center gap-2 font-semibold">
+            <Image src={logoUrl} alt="Vindex Hub logo" width={30} height={30} className="h-[30px] w-[30px] object-contain" unoptimized />
+            <span><span className="text-primary">Vindex</span> Admin</span>
+          </Link>
+          <div className="flex items-center gap-2 lg:hidden">
+            <ThemeToggle />
+            <Link href="/" className="text-xs text-muted hover:text-text">Site</Link>
+          </div>
         </div>
         <nav className="flex gap-1 overflow-x-auto px-3 pb-3 lg:flex-col lg:px-3 lg:pb-4">
           {nav.map((item) => {
@@ -34,6 +45,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           })}
         </nav>
         <div className="hidden px-3 pb-4 lg:block">
+          <div className="mb-2 px-1"><ThemeToggle /></div>
           <form action={adminLogout}>
             <button className="inline-flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-muted hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-text">
               <LogOut className="h-4 w-4" /> Logout

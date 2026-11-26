@@ -21,7 +21,7 @@ export function SettingsForm({ currentLogoUrl }: { currentLogoUrl: string | null
 
         <div className="mt-4 flex items-center gap-4">
           <div className="flex h-20 w-20 items-center justify-center rounded-xl border border-border bg-slate-50 dark:bg-slate-900/40 p-2">
-            <Image src={currentLogoUrl || "/vindex-logo.svg"} alt="Current logo" width={64} height={64} className="h-14 w-14 object-contain" />
+            <Image src={currentLogoUrl || "/vindex-logo.svg"} alt="Current logo" width={64} height={64} className="h-14 w-14 object-contain" unoptimized />
           </div>
           <div className="text-sm text-muted">
             <div>Current logo</div>

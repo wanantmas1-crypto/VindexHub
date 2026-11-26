@@ -19,7 +19,7 @@ export async function SiteHeader() {
     <header className="sticky top-0 z-40 border-b border-border/80 bg-surface/90 backdrop-blur">
       <Container className="flex h-16 items-center justify-between gap-4">
         <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight text-text">
-          <Image src={logoUrl} alt="Vindex Hub logo" width={34} height={34} priority className="h-[34px] w-[34px] object-contain" />
+          <Image src={logoUrl} alt="Vindex Hub logo" width={34} height={34} priority className="h-[34px] w-[34px] object-contain" unoptimized />
           <span><span className="text-primary">Vindex</span> Hub</span>
         </Link>
         <nav className="hidden items-center gap-6 md:flex" aria-label="Main navigation">
