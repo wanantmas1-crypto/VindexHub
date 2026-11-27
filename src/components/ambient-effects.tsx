@@ -7,13 +7,24 @@ function createAudioCtx() {
   return Ctx ? new Ctx() : null;
 }
 
-function playClick(ctx: AudioContext) {
+function getSettings() {
+  try {
+    const on = localStorage.getItem("vindex-sound") !== "off";
+    const raw = Number(localStorage.getItem("vindex-sound-volume"));
+    const volume = Number.isFinite(raw) ? Math.min(1, Math.max(0, raw)) : 0.5;
+    return { on, volume };
+  } catch {
+    return { on: true, volume: 0.5 };
+  }
+}
+
+function playClick(ctx: AudioContext, volume: number) {
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
   osc.type = "sine";
   osc.frequency.setValueAtTime(520, ctx.currentTime);
   osc.frequency.exponentialRampToValueAtTime(180, ctx.currentTime + 0.08);
-  gain.gain.setValueAtTime(0.035, ctx.currentTime);
+  gain.gain.setValueAtTime(0.035 * volume, ctx.currentTime);
   gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.08);
   osc.connect(gain);
   gain.connect(ctx.destination);
@@ -21,7 +32,7 @@ function playClick(ctx: AudioContext) {
   osc.stop(ctx.currentTime + 0.09);
 }
 
-function playScroll(ctx: AudioContext, dir: number) {
+function playScroll(ctx: AudioContext, dir: number, volume: number) {
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
   const filter = ctx.createBiquadFilter();
@@ -33,22 +44,13 @@ function playScroll(ctx: AudioContext, dir: number) {
   const end = dir > 0 ? 420 : 320;
   osc.frequency.setValueAtTime(start, ctx.currentTime);
   osc.frequency.exponentialRampToValueAtTime(end, ctx.currentTime + 0.12);
-  gain.gain.setValueAtTime(0.012, ctx.currentTime);
+  gain.gain.setValueAtTime(0.012 * volume, ctx.currentTime);
   gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.14);
   osc.connect(filter);
   filter.connect(gain);
   gain.connect(ctx.destination);
   osc.start();
   osc.stop(ctx.currentTime + 0.15);
-}
-
-function enabled() {
-  try {
-    const v = localStorage.getItem("vindex-sound");
-    if (v === "off") return false;
-    if (v === "on") return true;
-  } catch {}
-  return true;
 }
 
 export function AmbientEffects() {
@@ -60,7 +62,6 @@ export function AmbientEffects() {
   useEffect(() => {
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    // Scroll reveal
     const revealEls = () => Array.from(document.querySelectorAll<HTMLElement>("[data-reveal]:not(.revealed)"));
     const io = !reduced && "IntersectionObserver" in window
       ? new IntersectionObserver((entries) => {
@@ -78,7 +79,6 @@ export function AmbientEffects() {
     const mo = new MutationObserver(() => observe());
     mo.observe(document.body, { childList: true, subtree: true });
 
-    // Audio unlock
     const unlock = () => {
       if (unlockedRef.current) return;
       const ctx = createAudioCtx();
@@ -91,23 +91,25 @@ export function AmbientEffects() {
     window.addEventListener("keydown", unlock);
 
     const onClick = (e: MouseEvent) => {
-      if (!enabled() || !ctxRef.current) return;
+      const s = getSettings();
+      if (!s.on || s.volume <= 0 || !ctxRef.current) return;
       const t = e.target as HTMLElement | null;
       if (!t) return;
       const clickable = t.closest("a,button,[role='button'],input[type='submit'],summary");
-      if (clickable) playClick(ctxRef.current);
+      if (clickable) playClick(ctxRef.current, s.volume);
     };
     window.addEventListener("click", onClick, { capture: true });
 
     const onScroll = () => {
-      if (!enabled() || !ctxRef.current) return;
+      const s = getSettings();
+      if (!s.on || s.volume <= 0 || !ctxRef.current) return;
       const y = window.scrollY;
       const dir = y - lastScrollRef.current;
       lastScrollRef.current = y;
       const now = Date.now();
       if (Math.abs(dir) < 30 || now - lastScrollPlayRef.current < 900) return;
       lastScrollPlayRef.current = now;
-      playScroll(ctxRef.current, dir);
+      playScroll(ctxRef.current, dir, s.volume);
     };
     window.addEventListener("scroll", onScroll, { passive: true });
 

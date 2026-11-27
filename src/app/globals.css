@@ -200,5 +200,6 @@ body {
     animation: none !important;
   }
   .hover-lift, .hover-lift:hover { transition: none !important; transform: none !important; }
+  .bg-site-video, .hero-video { display: none !important; }
 }
 

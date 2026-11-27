@@ -8,6 +8,33 @@ import { formatPrice } from "@/lib/utils";
 import { Trash2, ShoppingBag, ArrowRight } from "lucide-react";
 import { useEffect, useState } from "react";
 
+function QtyInput({ value, onCommit }: { value: number; onCommit: (n: number) => void }) {
+  const [draft, setDraft] = useState(String(value));
+  useEffect(() => { setDraft(String(value)); }, [value]);
+  return (
+    <input
+      type="number"
+      min={1}
+      max={10}
+      value={draft}
+      onChange={(e) => {
+        const v = e.target.value;
+        setDraft(v);
+        if (v === "") return;
+        const n = Number(v);
+        if (Number.isFinite(n) && n >= 1) onCommit(Math.min(10, Math.floor(n)));
+      }}
+      onBlur={() => {
+        const n = Number(draft);
+        const next = Number.isFinite(n) && n >= 1 ? Math.min(10, Math.floor(n)) : 1;
+        setDraft(String(next));
+        onCommit(next);
+      }}
+      className="h-9 w-20 rounded-lg border border-border bg-bg px-2 text-sm text-text outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+    />
+  );
+}
+
 export default function CartPage() {
   const { items, updateQuantity, removeItem } = useCartStore();
   const [mounted, setMounted] = useState(false);
@@ -53,7 +80,7 @@ export default function CartPage() {
                     </div>
                     <div className="mt-3 flex items-center gap-3">
                       <label className="text-sm text-muted">Qty</label>
-                      <input type="number" min={1} max={10} value={item.quantity} onChange={(e) => updateQuantity(item.productId, Number(e.target.value))} className="h-9 w-20 rounded-lg border border-border bg-bg px-2 text-sm text-text outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" />
+                      <QtyInput value={item.quantity} onCommit={(n) => updateQuantity(item.productId, n)} />
                     </div>
                   </div>
                 </div>

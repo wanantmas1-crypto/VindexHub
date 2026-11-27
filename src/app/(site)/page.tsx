@@ -12,19 +12,8 @@ export default async function HomePage() {
 
   return (
     <main>
-      <section className="relative overflow-hidden border-b border-border bg-bg">
-        <video
-          className="hero-video"
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="metadata"
-          poster="https://images.pexels.com/videos/3129576/free-video-3129576.jpg?auto=compress&cs=tinysrgb&w=1600"
-        >
-          <source src="https://videos.pexels.com/video-files/3129576/3129576-hd_1920_1080_30fps.mp4" type="video/mp4" />
-        </video>
-        <div className="hero-video-overlay" />
+      <section className="relative overflow-hidden border-b border-border bg-transparent">
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-bg/30" />
         <div className="pointer-events-none absolute -left-20 top-16 h-72 w-72 rounded-full bg-primary/20 blur-3xl animate-glow" />
         <div className="pointer-events-none absolute right-0 bottom-0 h-80 w-80 rounded-full bg-cyan-400/10 blur-3xl animate-glow" style={{ animationDelay: "2s" }} />
 
