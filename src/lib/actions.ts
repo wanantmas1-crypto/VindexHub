@@ -159,33 +159,10 @@ export async function createCheckout(_: ActionState, formData: FormData): Promis
       return { ok: false, message: "Unable to start Stripe checkout." };
     }
 
-    // Demo mode fallback
-    const [order] = await db
-      .insert(orders)
-      .values({
-        email: parsed.data.email,
-        totalCents,
-        currency,
-        status: "paid",
-        downloadToken,
-        downloadExpiresAt: downloadExpiryDate(7),
-      })
-      .returning();
-
-    await db.insert(orderItems).values(
-      selected.map(({ product, quantity }) => ({
-        orderId: order.id,
-        productId: product.id,
-        productName: product.name,
-        unitPriceCents: product.priceCents,
-        quantity,
-        downloadUrl: product.downloadUrl,
-        licenseKey: createLicenseKey(product.slug),
-      })),
-    );
-
-    revalidatePath("/admin/orders");
-    redirect(`/checkout/success?order=${order.id}&token=${downloadToken}`);
+    return {
+      ok: false,
+      message: "Online payments are not configured yet. Please contact support or try again later.",
+    };
   } catch (error) {
     if (typeof error === "object" && error && "digest" in error && String((error as any).digest).startsWith("NEXT_REDIRECT")) {
       throw error;

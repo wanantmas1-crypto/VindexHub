@@ -21,11 +21,11 @@ export default async function CheckoutSuccessPage({ searchParams }: PageProps<"/
           {valid ? (
             <>
               <ClearCartOnMount />
-              <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-green-50 text-success dark:bg-green-950/40">
+              <div className={`inline-flex h-12 w-12 items-center justify-center rounded-2xl ${order!.status === "paid" ? "bg-green-50 text-success dark:bg-green-950/40" : "bg-amber-50 text-amber-600 dark:bg-amber-950/40"}`}>
                 <CheckCircle2 className="h-6 w-6" />
               </div>
-              <h1 className="mt-4 text-3xl font-bold tracking-tight text-text">Order Confirmed</h1>
-              <p className="mt-2 leading-7 text-muted">Thanks for your purchase. Save this page or your order ID for access to downloads and license keys.</p>
+              <h1 className="mt-4 text-3xl font-bold tracking-tight text-text">{order!.status === "paid" ? "Order Confirmed" : "Payment Pending"}</h1>
+              <p className="mt-2 leading-7 text-muted">{order!.status === "paid" ? "Thanks for your purchase. Save this page or your order ID for access to downloads and license keys." : "We received your order. Downloads and license keys will be available after payment is confirmed."}</p>
               <div className="mt-6 rounded-xl bg-slate-50 p-5 text-sm dark:bg-slate-900/40">
                 <div className="grid gap-2 sm:grid-cols-2">
                   <div><span className="text-muted">Order ID:</span> <span className="font-medium text-text">#{order!.id}</span></div>
@@ -43,12 +43,12 @@ export default async function CheckoutSuccessPage({ searchParams }: PageProps<"/
                       <div>
                         <div className="font-medium text-text">{item.productName}</div>
                         <div className="text-muted">Qty {item.quantity} • {formatPrice(item.unitPriceCents, order!.currency)}</div>
-                        {item.licenseKey && <div className="mt-2 rounded-md bg-slate-100 px-2.5 py-1.5 font-mono text-xs text-text dark:bg-slate-800">License: {item.licenseKey}</div>}
+                        {order!.status === "paid" && item.licenseKey && <div className="mt-2 rounded-md bg-slate-100 px-2.5 py-1.5 font-mono text-xs text-text dark:bg-slate-800">License: {item.licenseKey}</div>}
                       </div>
-                      {item.downloadUrl ? (
+                      {order!.status === "paid" && item.downloadUrl ? (
                         <a href={`/api/downloads/${item.id}?token=${token}`} className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-primary px-4 text-sm font-medium text-white transition hover:opacity-90"><Download className="h-4 w-4" />Download</a>
                       ) : (
-                        <span className="text-muted">Download pending</span>
+                        <span className="text-muted">{order!.status === "paid" ? "Download pending" : "Available after payment"}</span>
                       )}
                     </div>
                   </div>

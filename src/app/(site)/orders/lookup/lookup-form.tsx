@@ -39,10 +39,12 @@ export function OrderLookupForm() {
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <div className="font-medium">{item.productName} × {item.quantity}</div>
-                    {item.licenseKey && <div className="mt-1 font-mono text-xs">License: {item.licenseKey}</div>}
+                    {state.order?.status === "paid" && item.licenseKey && <div className="mt-1 font-mono text-xs">License: {item.licenseKey}</div>}
                   </div>
-                  {item.downloadUrl && state.order?.downloadToken ? (
+                  {state.order?.status === "paid" && item.downloadUrl && state.order?.downloadToken ? (
                     <a href={`/api/downloads/${item.id}?token=${state.order.downloadToken}`} className="inline-flex h-10 items-center justify-center rounded-xl bg-primary px-4 text-sm font-medium text-white hover:opacity-90">Download</a>
+                  ) : state.order?.status !== "paid" ? (
+                    <span className="text-sm text-muted">Available after payment</span>
                   ) : null}
                 </div>
               </div>
