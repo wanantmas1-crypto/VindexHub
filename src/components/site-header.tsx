@@ -7,7 +7,7 @@ import { getSiteSettings } from "@/lib/data";
 
 const nav = [
   { href: "/projects", label: "Projects" },
-  { href: "/products", label: "Software" },
+  { href: "/products", label: "Shop" },
   { href: "/services", label: "Services" },
   { href: "/reviews", label: "Reviews" },
 ];

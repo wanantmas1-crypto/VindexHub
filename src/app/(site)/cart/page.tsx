@@ -30,9 +30,9 @@ export default function CartPage() {
               <ShoppingBag className="h-7 w-7" />
             </div>
             <p className="mt-4 text-lg font-semibold text-text">Your cart is empty</p>
-            <p className="mt-2 text-muted">Discover software built to save you time and help you get more done.</p>
+            <p className="mt-2 text-muted">Discover products built to save you time and help you get more done.</p>
             <Link href="/products" className="mt-6 inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-primary px-6 text-sm font-semibold text-white shadow-sm shadow-primary/25 transition hover:opacity-90">
-              Explore Software <ArrowRight className="h-4 w-4" />
+              Explore Shop <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
         ) : (

@@ -7,7 +7,7 @@ import { AddToCartButton } from "@/components/add-to-cart-button";
 import { getActiveCategories, getActiveProducts } from "@/lib/data";
 import { formatPrice, effectivePriceCents } from "@/lib/utils";
 
-export const metadata: Metadata = { title: "Software" };
+export const metadata: Metadata = { title: "Shop" };
 
 export default async function ProductsPage({ searchParams }: PageProps<"/products">) {
   const { category, q, sort } = await searchParams;
@@ -22,9 +22,9 @@ export default async function ProductsPage({ searchParams }: PageProps<"/product
   return (
     <main className="py-14 sm:py-16">
       <Container>
-        <p className="text-sm font-semibold uppercase tracking-wider text-primary">Products</p>
-        <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">Software That Works for You</h1>
-        <p className="mt-3 max-w-2xl leading-7 text-muted">Choose from practical, ready-to-use software built by our team. Purchase securely, get instant access, and start solving problems today.</p>
+        <p className="text-sm font-semibold uppercase tracking-wider text-primary">Shop</p>
+        <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">Products That Work for You</h1>
+        <p className="mt-3 max-w-2xl leading-7 text-muted">Choose from practical, ready-to-use products built by our team. Purchase securely, get instant access, and start solving problems today.</p>
         <div className="mt-5 flex flex-wrap gap-3 text-sm text-muted">
           {["Built by Vindex", "Instant access", "Secure checkout", "Promo codes supported"].map((item) => (
             <span key={item} className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1.5">
@@ -38,7 +38,7 @@ export default async function ProductsPage({ searchParams }: PageProps<"/product
           {selectedCategory && <input type="hidden" name="category" value={selectedCategory} />}
           <div className="relative">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
-            <input name="q" defaultValue={query} placeholder="Search software..." className="h-11 w-full rounded-xl border border-border bg-surface py-2 pl-10 pr-3 text-sm text-text outline-none transition placeholder:text-slate-400 focus:border-primary focus:ring-2 focus:ring-primary/20" />
+            <input name="q" defaultValue={query} placeholder="Search products..." className="h-11 w-full rounded-xl border border-border bg-surface py-2 pl-10 pr-3 text-sm text-text outline-none transition placeholder:text-slate-400 focus:border-primary focus:ring-2 focus:ring-primary/20" />
           </div>
           <select name="sort" defaultValue={selectedSort ?? "newest"} className="h-11 rounded-xl border border-border bg-surface px-3 text-sm text-text outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20">
             <option value="newest">Newest</option>

@@ -19,8 +19,8 @@ export function CategoriesManager({ initialCategories }: { initialCategories: Ca
 
   return (
     <main>
-      <h1 className="text-2xl font-bold tracking-tight">Software Categories</h1>
-      <p className="mt-1 text-muted">Organize software products into categories.</p>
+      <h1 className="text-2xl font-bold tracking-tight">Product Categories</h1>
+      <p className="mt-1 text-muted">Organize products into categories.</p>
       <div className="mt-6 grid gap-6 xl:grid-cols-[420px_1fr]">
         <form action={action} className="rounded-xl border border-border bg-surface p-5 space-y-3 h-fit">
           <h2 className="font-semibold">{editing ? "Edit Category" : "Add Category"}</h2>

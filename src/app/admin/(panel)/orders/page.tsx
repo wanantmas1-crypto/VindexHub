@@ -7,7 +7,7 @@ export default async function AdminOrdersPage() {
   return (
     <main>
       <h1 className="text-2xl font-bold tracking-tight">Orders</h1>
-      <p className="mt-1 text-muted">Guest checkout orders and purchased software items.</p>
+      <p className="mt-1 text-muted">Guest checkout orders and purchased items.</p>
       <div className="mt-6 space-y-4">
         {orders.map((order) => (
           <div key={order.id} className="rounded-xl border border-border bg-surface p-5">

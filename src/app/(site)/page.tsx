@@ -18,10 +18,10 @@ export default async function HomePage() {
           <div className="max-w-3xl">
             <Badge className="gap-1.5 px-3 py-1.5">
               <Sparkles className="h-3.5 w-3.5" />
-              Vindex Hub Software Store
+              Vindex Hub Shop
             </Badge>
             <h1 className="mt-6 text-4xl font-bold tracking-tight text-balance sm:text-5xl lg:text-[3.5rem] lg:leading-[1.1]">
-              Buy ready-to-use software built to <span className="text-primary">solve real problems</span>.
+              Buy ready-to-use products built to <span className="text-primary">solve real problems</span>.
             </h1>
             <p className="mt-6 max-w-2xl text-base leading-7 text-muted sm:text-lg">
               Browse our digital products, add to cart, and get secure access after payment. Need something else? Explore our portfolio or request a custom service.
@@ -51,7 +51,7 @@ export default async function HomePage() {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-sm font-semibold uppercase tracking-wider text-primary">Products</p>
-              <h2 className="mt-2 text-3xl font-bold tracking-tight">Software for Sale</h2>
+              <h2 className="mt-2 text-3xl font-bold tracking-tight">Products for Sale</h2>
               <p className="mt-2 text-muted">Choose a product, checkout securely, and download after confirmed payment.</p>
             </div>
             <Link href="/products" className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
@@ -88,7 +88,7 @@ export default async function HomePage() {
             {products.length === 0 && (
               <div className="col-span-full rounded-2xl border border-dashed border-border bg-surface p-10 text-center">
                 <p className="font-medium text-text">No products available yet</p>
-                <p className="mt-1 text-sm text-muted">Check back soon for new software releases.</p>
+                <p className="mt-1 text-sm text-muted">Check back soon for new products.</p>
               </div>
             )}
           </div>

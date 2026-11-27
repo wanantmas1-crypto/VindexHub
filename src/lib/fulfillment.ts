@@ -63,7 +63,7 @@ export async function fulfillPaidOrder(input: FulfillPaymentInput) {
         const product = allProducts.find((p) => p.id === item.productId);
         await tx
           .update(orderItems)
-          .set({ licenseKey: createLicenseKey(product?.slug ?? "software") })
+          .set({ licenseKey: createLicenseKey(product?.slug ?? "product") })
           .where(eq(orderItems.id, item.id));
       }
     }

@@ -41,7 +41,7 @@ export function ProductsManager({ initialProducts, categories }: { initialProduc
   return (
     <main>
       <h1 className="text-2xl font-bold tracking-tight">Products</h1>
-      <p className="mt-1 text-muted">Add and manage software products.</p>
+      <p className="mt-1 text-muted">Add and manage products.</p>
       <div className="mt-6 grid gap-6 xl:grid-cols-[420px_1fr]">
         <form action={action} className="rounded-xl border border-border bg-surface p-5 space-y-3 h-fit">
           <h2 className="font-semibold">{editing ? "Edit Product" : "Add Product"}</h2>

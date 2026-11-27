@@ -55,7 +55,7 @@ export default async function CheckoutSuccessPage({ searchParams }: PageProps<"/
                 </div>
                 {order!.downloadExpiresAt && <div className="mt-2"><span className="text-muted">Download access until:</span> <span className="font-medium text-text">{new Date(order!.downloadExpiresAt).toLocaleString()}</span></div>}
               </div>
-              <h2 className="mt-8 font-semibold text-lg">Your Software</h2>
+              <h2 className="mt-8 font-semibold text-lg">Your Products</h2>
               <div className="mt-4 space-y-3">
                 {items.map((item) => (
                   <div key={item.id} className="rounded-xl border border-border p-4 text-sm">

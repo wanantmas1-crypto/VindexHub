@@ -160,9 +160,9 @@ async function main() {
   await db.insert(siteSettings).values({ id: 1, logoUrl: null }).run();
 
   await db.insert(categories).values([
-    { name: "Business Tools", slug: "business-tools", description: "Software for operations, CRM, and productivity.", active: true },
+    { name: "Business Tools", slug: "business-tools", description: "Products for operations, CRM, and productivity.", active: true },
     { name: "Developer Tools", slug: "developer-tools", description: "Tools that help developers build and ship faster.", active: true },
-    { name: "Finance", slug: "finance", description: "Invoicing, payments, and finance-related software.", active: true },
+    { name: "Finance", slug: "finance", description: "Invoicing, payments, and finance-related products.", active: true },
   ]).run();
 
   await db.insert(projects).values([
@@ -206,7 +206,7 @@ async function main() {
       categoryId: 1,
       slug: "vindex-crm-pro",
       name: "Vindex CRM Pro",
-      description: "A lightweight CRM software for freelancers and small teams. Manage leads, contacts, deals, and follow-ups in one clean interface.",
+      description: "A lightweight CRM for freelancers and small teams. Manage leads, contacts, deals, and follow-ups in one clean interface.",
       features: JSON.stringify(["Lead and contact management", "Deal pipeline tracking", "Email reminders", "Exportable reports", "Lifetime license for v1.x"]),
       screenshots: "[]",
       systemRequirements: "Windows 10+/macOS 12+/Linux, 4GB RAM, 500MB disk space, modern browser for web dashboard.",
@@ -243,7 +243,7 @@ async function main() {
       categoryId: 3,
       slug: "invoice-sprint",
       name: "Invoice Sprint",
-      description: "Simple invoicing software for developers and agencies. Create branded invoices, track payments, and export records.",
+      description: "Simple invoicing tool for developers and agencies. Create branded invoices, track payments, and export records.",
       features: JSON.stringify(["Branded invoice templates", "Payment status tracking", "PDF export", "Client records"]),
       screenshots: "[]",
       systemRequirements: "Modern browser, internet connection for cloud sync (optional).",
@@ -281,7 +281,7 @@ async function main() {
     {
       slug: "maintenance-support",
       name: "Maintenance & Support",
-      description: "Ongoing support, bug fixes, performance improvements, and feature updates for existing software.",
+      description: "Ongoing support, bug fixes, performance improvements, and feature updates for existing products and systems.",
       deliverables: JSON.stringify(["Bug fixes", "Performance tuning", "Security updates", "Monthly support report"]),
       startingPriceCents: 500000,
       currency: "KES",
@@ -313,7 +313,7 @@ async function main() {
       authorName: "Sarah T.",
       authorEmail: "sarah@example.com",
       rating: 5,
-      comment: "Professional communication and solid delivery. The final software matched our requirements perfectly.",
+      comment: "Professional communication and solid delivery. The final product matched our requirements perfectly.",
       status: "approved",
       verifiedBuyer: false,
     },

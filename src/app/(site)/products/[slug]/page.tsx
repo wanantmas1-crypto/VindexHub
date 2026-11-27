@@ -128,7 +128,7 @@ export default async function ProductDetailPage({ params }: PageProps<"/products
         <section className="mt-14 grid gap-8 lg:grid-cols-2">
           <div>
             <h2 className="text-xl font-semibold">Customer Reviews</h2>
-            <p className="mt-1 text-sm text-muted">{reviews.length ? `${avg.toFixed(1)} / 5 from ${reviews.length} review(s)` : "Be the first to share your experience with this software."}</p>
+            <p className="mt-1 text-sm text-muted">{reviews.length ? `${avg.toFixed(1)} / 5 from ${reviews.length} review(s)` : "Be the first to share your experience with this product."}</p>
             <div className="mt-5 space-y-4">
               {reviews.map((review) => (
                 <div key={review.id} className="rounded-2xl border border-border bg-surface p-5">

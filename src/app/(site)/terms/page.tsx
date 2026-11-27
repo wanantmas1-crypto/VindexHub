@@ -15,7 +15,7 @@ export default function TermsPage() {
         <div className="mt-8 space-y-6 text-sm leading-7 text-muted">
           <section>
             <h2 className="text-base font-semibold text-text">Digital products</h2>
-            <p className="mt-2">Software purchases include access to downloadable files and license keys as described on the product page. Licenses are provided according to the product&apos;s license type.</p>
+            <p className="mt-2">Digital product purchases include access to downloadable files and license keys as described on the product page. Licenses are provided according to the product&apos;s license type.</p>
           </section>
           <section>
             <h2 className="text-base font-semibold text-text">Acceptable use</h2>

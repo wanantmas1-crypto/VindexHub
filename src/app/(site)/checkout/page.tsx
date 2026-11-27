@@ -38,7 +38,7 @@ function CheckoutContent() {
           {items.length === 0 ? (
             <div className="mt-8 rounded-2xl border border-dashed border-border bg-surface p-8">
               <p className="font-medium text-text">Your cart is empty.</p>
-              <Link href="/products" className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">Browse software <ArrowRight className="h-4 w-4" /></Link>
+              <Link href="/products" className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">Browse products <ArrowRight className="h-4 w-4" /></Link>
             </div>
           ) : (
             <form action={action} className="mt-8 rounded-2xl border border-border bg-surface p-6 space-y-5">

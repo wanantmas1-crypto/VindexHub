@@ -14,7 +14,7 @@ export default async function ProjectsPage() {
       <Container>
         <p className="text-sm font-semibold uppercase tracking-wider text-primary">Portfolio</p>
         <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">Projects</h1>
-        <p className="mt-3 max-w-2xl leading-7 text-muted">A showcase of software we’ve designed, built, and delivered.</p>
+        <p className="mt-3 max-w-2xl leading-7 text-muted">A showcase of work we’ve designed, built, and delivered.</p>
         <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {projects.map((project) => (
             <article key={project.id} className="group overflow-hidden rounded-2xl border border-border bg-surface transition duration-200 hover:-translate-y-0.5 hover:border-primary/20 hover:shadow-lg hover:shadow-slate-200/50 dark:hover:shadow-none">

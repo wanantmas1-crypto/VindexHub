@@ -10,7 +10,7 @@ export default function LicensePage() {
         <p className="text-sm font-semibold uppercase tracking-wider text-primary">Legal</p>
         <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">License Terms</h1>
         <p className="mt-4 leading-7 text-muted">
-          Each software product includes a license that defines how it can be used. The specific license type is shown on the product page and in your purchase confirmation.
+          Each digital product includes a license that defines how it can be used. The specific license type is shown on the product page and in your purchase confirmation.
         </p>
         <div className="mt-8 space-y-6 text-sm leading-7 text-muted">
           <section>

@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     template: "%s | Vindex Hub",
   },
   description:
-    "Vindex Hub - software portfolio, digital products, and professional services.",
+    "Vindex Hub - portfolio, digital products, and professional services.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
