@@ -8,6 +8,7 @@ import { AddToCartButton } from "@/components/add-to-cart-button";
 import { getProductBySlug, getApprovedReviewsForProduct } from "@/lib/data";
 import { formatPrice, parseJsonArray, effectivePriceCents } from "@/lib/utils";
 import { ReviewForm } from "@/components/review-form";
+import { TypewriterText } from "@/components/typewriter-text";
 import { Star, ShieldCheck, Download, KeyRound, CheckCircle2, Package } from "lucide-react";
 
 export async function generateMetadata({ params }: PageProps<"/products/[slug]">): Promise<Metadata> {
@@ -130,14 +131,16 @@ export default async function ProductDetailPage({ params }: PageProps<"/products
             <h2 className="text-xl font-semibold">Customer Reviews</h2>
             <p className="mt-1 text-sm text-muted">{reviews.length ? `${avg.toFixed(1)} / 5 from ${reviews.length} review(s)` : "Be the first to share your experience with this product."}</p>
             <div className="mt-5 space-y-4">
-              {reviews.map((review) => (
+              {reviews.map((review, i) => (
                 <div key={review.id} className="rounded-2xl border border-border bg-surface p-5">
                   <div className="flex items-center gap-1">
                     {Array.from({ length: 5 }).map((_, i) => (
                       <Star key={i} className={`h-4 w-4 ${i < review.rating ? "fill-amber-400 text-amber-400" : "fill-slate-200 text-slate-200 dark:fill-slate-700 dark:text-slate-700"}`} />
                     ))}
                   </div>
-                  <p className="mt-3 text-sm leading-6 text-muted">{review.comment}</p>
+                  <p className="mt-3 text-sm leading-6 text-muted min-h-[3rem]">
+                    <TypewriterText text={`“${review.comment}”`} speed={18} startDelay={i * 120} />
+                  </p>
                   <div className="mt-3 text-sm font-medium">{review.authorName} {review.verifiedBuyer && <span className="text-xs font-normal text-success">(Verified buyer)</span>}</div>
                 </div>
               ))}

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Star } from "lucide-react";
 import { Container } from "@/components/container";
 import { getApprovedReviews } from "@/lib/data";
+import { TypewriterText } from "@/components/typewriter-text";
 
 export const metadata: Metadata = { title: "Reviews" };
 
@@ -23,7 +24,9 @@ export default async function ReviewsPage() {
                   <Star key={i} className={`h-4 w-4 ${i < review.rating ? "fill-amber-400 text-amber-400" : "fill-slate-200 text-slate-200 dark:fill-slate-700 dark:text-slate-700"}`} />
                 ))}
               </div>
-              <p className="mt-4 text-sm leading-6 text-muted">“{review.comment}”</p>
+              <p className="mt-4 text-sm leading-6 text-muted min-h-[4.5rem]">
+                <TypewriterText text={`“${review.comment}”`} speed={18} startDelay={i * 120} />
+              </p>
               <div className="mt-5 flex items-center gap-3">
                 <div className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
                   {review.authorName.charAt(0).toUpperCase()}
