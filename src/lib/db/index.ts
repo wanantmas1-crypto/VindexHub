@@ -5,9 +5,14 @@ import { drizzle } from "drizzle-orm/libsql";
 import * as schema from "./schema";
 
 const isVercel = !!process.env.VERCEL;
-const configuredUrl = process.env.TURSO_DATABASE_URL ?? process.env.DATABASE_URL;
+const configuredUrl =
+  process.env.TURSO_DATABASE_URL ??
+  process.env.VINDEX_HUB_DB_TURSO_DATABASE_URL ??
+  process.env.DATABASE_URL;
 const url = configuredUrl ?? (isVercel ? "file:/tmp/vindex.db" : "file:./dev.db");
-const authToken = process.env.TURSO_AUTH_TOKEN;
+const authToken =
+  process.env.TURSO_AUTH_TOKEN ??
+  process.env.VINDEX_HUB_DB_TURSO_AUTH_TOKEN;
 
 const globalForDb = globalThis as unknown as {
   client?: Client;

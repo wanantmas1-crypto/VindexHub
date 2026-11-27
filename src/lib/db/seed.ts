@@ -3,8 +3,14 @@ import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
 import { categories, projects, products, services, reviews, orders, orderItems, serviceRequests, siteSettings } from "./schema";
 
-const url = process.env.TURSO_DATABASE_URL ?? process.env.DATABASE_URL ?? "file:./dev.db";
-const authToken = process.env.TURSO_AUTH_TOKEN;
+const url =
+  process.env.TURSO_DATABASE_URL ??
+  process.env.VINDEX_HUB_DB_TURSO_DATABASE_URL ??
+  process.env.DATABASE_URL ??
+  "file:./dev.db";
+const authToken =
+  process.env.TURSO_AUTH_TOKEN ??
+  process.env.VINDEX_HUB_DB_TURSO_AUTH_TOKEN;
 const client = createClient({ url, authToken });
 const db = drizzle(client);
 
