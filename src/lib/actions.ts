@@ -166,6 +166,9 @@ export async function createCheckout(_: ActionState, formData: FormData): Promis
         revalidatePath("/admin/orders");
         redirect(init.authorization_url);
       } catch (e: any) {
+        if (typeof e === "object" && e && "digest" in e && String((e as any).digest).startsWith("NEXT_REDIRECT")) {
+          throw e;
+        }
         await db.update(orders).set({ status: "failed", paymentFailureReason: e?.message?.slice(0, 255) ?? "Paystack init failed" }).where(eq(orders.id, order.id));
         revalidatePath("/admin/orders");
         return { ok: false, message: e?.message || "Failed to initialize Paystack payment. Please try again." };
