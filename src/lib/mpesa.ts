@@ -77,6 +77,10 @@ export async function initiateStkPush(input: StkPushInput): Promise<StkPushResul
   const password = Buffer.from(`${shortcode}${passkey}${timestamp}`).toString("base64");
   const token = await getMpesaAccessToken();
 
+  const transactionType =
+    (process.env.MPESA_TRANSACTION_TYPE ?? "CustomerPayBillOnline").trim() || "CustomerPayBillOnline";
+  const partyB = (process.env.MPESA_PARTYB ?? shortcode).trim() || shortcode;
+
   const res = await fetch(`${baseUrl()}/mpesa/stkpush/v1/processrequest`, {
     method: "POST",
     headers: {
@@ -87,10 +91,10 @@ export async function initiateStkPush(input: StkPushInput): Promise<StkPushResul
       BusinessShortCode: shortcode,
       Password: password,
       Timestamp: timestamp,
-      TransactionType: "CustomerPayBillOnline",
+      TransactionType: transactionType,
       Amount: Math.round(input.amount),
       PartyA: input.phone,
-      PartyB: shortcode,
+      PartyB: partyB,
       PhoneNumber: input.phone,
       CallBackURL: input.callbackUrl,
       AccountReference: input.accountReference.slice(0, 12),
