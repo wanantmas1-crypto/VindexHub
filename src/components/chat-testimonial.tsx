@@ -79,12 +79,13 @@ export function ChatTestimonial({ review, index }: { review: Review; index: numb
   }, []);
 
   useEffect(() => {
-    if (!visible || phase !== "idle") return;
-    const t1 = setTimeout(() => setPhase("incoming"), 150 + index * 120);
-    const t2 = setTimeout(() => setPhase("typing"), 900 + index * 120);
-    const t3 = setTimeout(() => setPhase("message"), 1700 + index * 120);
-    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
-  }, [visible, phase, index]);
+    if (!visible) return;
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    timers.push(setTimeout(() => setPhase("incoming"), 150 + index * 120));
+    timers.push(setTimeout(() => setPhase("typing"), 900 + index * 120));
+    timers.push(setTimeout(() => setPhase("message"), 1700 + index * 120));
+    return () => timers.forEach(clearTimeout);
+  }, [visible, index]);
 
   const Icon = s.Icon;
   const time = new Date(review.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });

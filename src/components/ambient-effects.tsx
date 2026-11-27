@@ -11,10 +11,10 @@ function getSettings() {
   try {
     const on = localStorage.getItem("vindex-sound") !== "off";
     const raw = Number(localStorage.getItem("vindex-sound-volume"));
-    const volume = Number.isFinite(raw) ? Math.min(1, Math.max(0, raw)) : 0.5;
+    const volume = Number.isFinite(raw) ? Math.min(1, Math.max(0, raw)) : 0.7;
     return { on, volume };
   } catch {
-    return { on: true, volume: 0.5 };
+    return { on: true, volume: 0.7 };
   }
 }
 
@@ -24,8 +24,8 @@ function playClick(ctx: AudioContext, volume: number) {
   osc.type = "sine";
   osc.frequency.setValueAtTime(520, ctx.currentTime);
   osc.frequency.exponentialRampToValueAtTime(180, ctx.currentTime + 0.08);
-  gain.gain.setValueAtTime(0.035 * volume, ctx.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.08);
+  gain.gain.setValueAtTime(0.085 * volume, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.1);
   osc.connect(gain);
   gain.connect(ctx.destination);
   osc.start();
@@ -44,8 +44,8 @@ function playScroll(ctx: AudioContext, dir: number, volume: number) {
   const end = dir > 0 ? 420 : 320;
   osc.frequency.setValueAtTime(start, ctx.currentTime);
   osc.frequency.exponentialRampToValueAtTime(end, ctx.currentTime + 0.12);
-  gain.gain.setValueAtTime(0.012 * volume, ctx.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.14);
+  gain.gain.setValueAtTime(0.04 * volume, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.16);
   osc.connect(filter);
   filter.connect(gain);
   gain.connect(ctx.destination);

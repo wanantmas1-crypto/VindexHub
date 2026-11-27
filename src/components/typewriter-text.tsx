@@ -22,10 +22,10 @@ function soundSettings() {
   try {
     const on = localStorage.getItem("vindex-sound") !== "off";
     const raw = Number(localStorage.getItem("vindex-sound-volume"));
-    const volume = Number.isFinite(raw) ? Math.min(1, Math.max(0, raw)) : 0.5;
+    const volume = Number.isFinite(raw) ? Math.min(1, Math.max(0, raw)) : 0.7;
     return { on, volume };
   } catch {
-    return { on: true, volume: 0.5 };
+    return { on: true, volume: 0.7 };
   }
 }
 
@@ -40,8 +40,8 @@ function playTick() {
   osc.type = "square";
   osc.frequency.setValueAtTime(720 + Math.random() * 120, ctx.currentTime);
   osc.frequency.exponentialRampToValueAtTime(520, ctx.currentTime + 0.025);
-  gain.gain.setValueAtTime(0.008 * s.volume, ctx.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.03);
+  gain.gain.setValueAtTime(0.022 * s.volume, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.04);
   osc.connect(gain);
   gain.connect(ctx.destination);
   osc.start();

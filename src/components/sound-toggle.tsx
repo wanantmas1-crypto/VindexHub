@@ -7,10 +7,10 @@ function readSettings() {
   try {
     const on = localStorage.getItem("vindex-sound") !== "off";
     const raw = Number(localStorage.getItem("vindex-sound-volume"));
-    const volume = Number.isFinite(raw) ? Math.min(100, Math.max(0, Math.round(raw * 100))) : 50;
+    const volume = Number.isFinite(raw) ? Math.min(100, Math.max(0, Math.round(raw * 100))) : 70;
     return { on, volume };
   } catch {
-    return { on: true, volume: 50 };
+    return { on: true, volume: 70 };
   }
 }
 
