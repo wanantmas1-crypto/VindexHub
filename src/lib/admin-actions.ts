@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { eq } from "drizzle-orm";
 import { db } from "./db";
-import { categories, products, projects, reviews, serviceRequests, services, siteSettings } from "./db/schema";
+import { categories, orderItems, products, projects, reviews, serviceRequests, services, siteSettings } from "./db/schema";
 import { clearAdminSession, createAdminSession, requireAdminSession, verifyAdminCredentials } from "./auth";
 import { categorySchema, productSchema, projectSchema, serviceSchema } from "./validators";
 import { slugify } from "./utils";
@@ -48,15 +48,17 @@ export async function saveProduct(_: AdminActionState, formData: FormData): Prom
   const parsed = productSchema.safeParse(raw);
   if (!parsed.success) return { ok: false, message: parsed.error.issues[0]?.message ?? "Invalid product data." };
   const data = parsed.data;
+  const priceCents = Math.round(data.priceKes * 100);
+  const offerPriceCentsRaw = data.offerPriceKes != null ? Math.round(data.offerPriceKes * 100) : null;
   const offerPriceCents =
-    data.offerPriceCents != null && data.offerPriceCents < data.priceCents ? data.offerPriceCents : null;
+    offerPriceCentsRaw != null && offerPriceCentsRaw < priceCents ? offerPriceCentsRaw : null;
   const values = {
     categoryId: data.categoryId ? Number(data.categoryId) : null,
     name: data.name,
     slug: data.slug || slugify(data.name),
     description: data.description,
     features: toJsonArray(data.features),
-    priceCents: data.priceCents,
+    priceCents,
     offerPriceCents,
     currency: data.currency.toUpperCase(),
     imageUrl: data.imageUrl || null,
@@ -79,7 +81,19 @@ export async function saveProduct(_: AdminActionState, formData: FormData): Prom
 export async function deleteProduct(formData: FormData) {
   await requireAdminSession();
   const id = Number(formData.get("id"));
-  if (id) await db.delete(products).where(eq(products.id, id));
+  if (!id) return;
+  try {
+    const [hasOrders] = await db.select({ id: orderItems.id }).from(orderItems).where(eq(orderItems.productId, id)).limit(1);
+    const [hasReviews] = await db.select({ id: reviews.id }).from(reviews).where(eq(reviews.productId, id)).limit(1);
+    if (hasOrders || hasReviews) {
+      await db.update(products).set({ active: false }).where(eq(products.id, id));
+    } else {
+      await db.delete(products).where(eq(products.id, id));
+    }
+  } catch (e) {
+    console.error("[deleteProduct]", e);
+    try { await db.update(products).set({ active: false }).where(eq(products.id, id)); } catch {}
+  }
   revalidatePath("/products");
   revalidatePath("/admin/products");
   revalidatePath("/");
@@ -96,7 +110,7 @@ export async function saveService(_: AdminActionState, formData: FormData): Prom
     slug: data.slug || slugify(data.name),
     description: data.description,
     deliverables: toJsonArray(data.deliverables),
-    startingPriceCents: data.startingPriceCents,
+    startingPriceCents: Math.round(data.startingPriceKes * 100),
     currency: data.currency.toUpperCase(),
     active: data.active,
   };
@@ -110,7 +124,19 @@ export async function saveService(_: AdminActionState, formData: FormData): Prom
 export async function deleteService(formData: FormData) {
   await requireAdminSession();
   const id = Number(formData.get("id"));
-  if (id) await db.delete(services).where(eq(services.id, id));
+  if (!id) return;
+  try {
+    const [hasRequests] = await db.select({ id: serviceRequests.id }).from(serviceRequests).where(eq(serviceRequests.serviceId, id)).limit(1);
+    const [hasReviews] = await db.select({ id: reviews.id }).from(reviews).where(eq(reviews.serviceId, id)).limit(1);
+    if (hasRequests || hasReviews) {
+      await db.update(services).set({ active: false }).where(eq(services.id, id));
+    } else {
+      await db.delete(services).where(eq(services.id, id));
+    }
+  } catch (e) {
+    console.error("[deleteService]", e);
+    try { await db.update(services).set({ active: false }).where(eq(services.id, id)); } catch {}
+  }
   revalidatePath("/services");
   revalidatePath("/admin/services");
 }

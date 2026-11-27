@@ -55,11 +55,11 @@ export function ProductsManager({ initialProducts, categories }: { initialProduc
           <Textarea name="description" placeholder="Description" defaultValue={editing?.description} required rows={4} />
           <Textarea name="features" placeholder="Features (one per line)" defaultValue={editing ? parseJsonArray<string>(editing.features).join("\n") : ""} rows={4} />
           <div className="grid gap-3 sm:grid-cols-3">
-            <Input name="priceCents" type="number" min={0} placeholder="Price (cents)" defaultValue={editing?.priceCents} required />
-            <Input name="offerPriceCents" type="number" min={0} placeholder="Offer price (cents)" defaultValue={editing?.offerPriceCents ?? ""} />
+            <Input name="priceKes" type="number" min={0} step="0.01" placeholder="Price (KES)" defaultValue={editing ? editing.priceCents / 100 : ""} required />
+            <Input name="offerPriceKes" type="number" min={0} step="0.01" placeholder="Offer price (KES)" defaultValue={editing?.offerPriceCents != null ? editing.offerPriceCents / 100 : ""} />
             <Input name="currency" placeholder="KES" defaultValue={editing?.currency ?? "KES"} required />
           </div>
-          <p className="text-xs text-muted -mt-1">Offer price is optional. If set lower than price, it becomes the active sale price.</p>
+          <p className="text-xs text-muted -mt-1">Enter prices in KES. Offer price is optional; if set lower than price, it becomes the active sale price.</p>
           <Input name="imageUrl" placeholder="Image URL" defaultValue={editing?.imageUrl ?? ""} />
           <Input name="downloadUrl" placeholder="Download URL / file path" defaultValue={editing?.downloadUrl ?? ""} />
           <Input name="licenseType" placeholder="License type" defaultValue={editing?.licenseType ?? "Standard License"} />

@@ -31,7 +31,7 @@ export function ServicesManager({ initialServices }: { initialServices: Service[
           <Textarea name="description" placeholder="Description" defaultValue={editing?.description} required rows={4} />
           <Textarea name="deliverables" placeholder="Deliverables (one per line)" defaultValue={editing ? parseJsonArray<string>(editing.deliverables).join("\n") : ""} rows={4} />
           <div className="grid gap-3 sm:grid-cols-2">
-            <Input name="startingPriceCents" type="number" min={0} placeholder="Starting price cents" defaultValue={editing?.startingPriceCents} required />
+            <Input name="startingPriceKes" type="number" min={0} step="0.01" placeholder="Starting price (KES)" defaultValue={editing ? editing.startingPriceCents / 100 : ""} required />
             <Input name="currency" defaultValue={editing?.currency ?? "KES"} required />
           </div>
           <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="active" defaultChecked={editing?.active ?? true} /> Active</label>

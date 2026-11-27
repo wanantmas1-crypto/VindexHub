@@ -32,10 +32,10 @@ export const productSchema = z.object({
   slug: z.string().min(2).max(140),
   description: z.string().min(10).max(5000),
   features: z.string().optional().or(z.literal("")),
-  priceCents: z.coerce.number().int().min(0),
-  offerPriceCents: z.preprocess(
+  priceKes: z.coerce.number().min(0),
+  offerPriceKes: z.preprocess(
     (v) => (v === "" || v == null ? undefined : v),
-    z.coerce.number().int().min(0).optional(),
+    z.coerce.number().min(0).optional(),
   ),
   currency: z.string().min(3).max(3).default("KES"),
   imageUrl: z.string().url().optional().or(z.literal("")),
@@ -51,7 +51,7 @@ export const serviceSchema = z.object({
   slug: z.string().min(2).max(140),
   description: z.string().min(10).max(5000),
   deliverables: z.string().optional().or(z.literal("")),
-  startingPriceCents: z.coerce.number().int().min(0),
+  startingPriceKes: z.coerce.number().min(0),
   currency: z.string().min(3).max(3).default("KES"),
   active: z.coerce.boolean().default(true),
 });
