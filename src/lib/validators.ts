@@ -66,6 +66,8 @@ export const projectSchema = z.object({
 
 export const checkoutSchema = z.object({
   email: z.string().email(),
+  phone: z.string().max(30).optional().or(z.literal("")),
+  paymentMethod: z.enum(["mpesa", "stripe"]).optional(),
   items: z
     .array(
       z.object({

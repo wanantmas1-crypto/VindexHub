@@ -54,7 +54,11 @@ export default async function CheckoutSuccessPage({ searchParams }: PageProps<"/
                   </div>
                 ))}
               </div>
-              <p className="mt-5 text-sm text-muted">Need help later? Use <Link href="/orders/lookup" className="text-primary hover:underline">Order Lookup</Link> with your email and order ID.</p>
+              <div className="mt-5 flex flex-wrap gap-3 text-sm">
+                <Link href={`/orders/${order!.id}/receipt?token=${token}`} className="text-primary hover:underline">View receipt</Link>
+                <span className="text-muted">•</span>
+                <span className="text-muted">Need help later? Use <Link href="/orders/lookup" className="text-primary hover:underline">Order Lookup</Link> with your email and order ID.</span>
+              </div>
             </>
           ) : (
             <>

@@ -7,9 +7,18 @@ import { db } from "./db";
 import { orders, orderItems, reviews, serviceRequests } from "./db/schema";
 import { checkoutSchema, reviewSchema, serviceRequestSchema } from "./validators";
 import { getStripe, isStripeConfigured } from "./stripe";
-import { createDownloadToken, createLicenseKey, downloadExpiryDate } from "./orders";
+import { createDownloadToken } from "./orders";
+import { isMpesaConfigured, initiateStkPush, normalizeKenyanPhone } from "./mpesa";
 
-export type ActionState = { ok: boolean; message: string; errors?: Record<string, string[]> };
+export type ActionState = {
+  ok: boolean;
+  message: string;
+  errors?: Record<string, string[]>;
+  orderId?: number;
+  paymentPending?: boolean;
+  checkoutRequestId?: string;
+  downloadToken?: string;
+};
 
 export async function submitServiceRequest(_: ActionState, formData: FormData): Promise<ActionState> {
   const raw = Object.fromEntries(formData.entries());
@@ -65,7 +74,7 @@ export async function submitReview(_: ActionState, formData: FormData): Promise<
 export type OrderLookupState = {
   ok: boolean;
   message: string;
-  order?: { id: number; email: string; totalCents: number; currency: string; status: string; downloadExpiresAt: string | null; downloadToken: string | null };
+  order?: { id: number; email: string; totalCents: number; currency: string; status: string; downloadExpiresAt: string | null; downloadToken: string | null; receiptNumber: string | null };
   items?: Array<{ id: number; productName: string; quantity: number; unitPriceCents: number; licenseKey: string | null; downloadUrl: string | null }>;
 };
 
@@ -82,7 +91,7 @@ export async function lookupOrder(_: OrderLookupState, formData: FormData): Prom
   return {
     ok: true,
     message: "Order found.",
-    order: { id: order.id, email: order.email, totalCents: order.totalCents, currency: order.currency, status: order.status, downloadExpiresAt: order.downloadExpiresAt, downloadToken: order.downloadToken },
+    order: { id: order.id, email: order.email, totalCents: order.totalCents, currency: order.currency, status: order.status, downloadExpiresAt: order.downloadExpiresAt, downloadToken: order.downloadToken, receiptNumber: (order as any).receiptNumber ?? null },
     items: items.map((i) => ({ id: i.id, productName: i.productName, quantity: i.quantity, unitPriceCents: i.unitPriceCents, licenseKey: i.licenseKey, downloadUrl: i.downloadUrl })),
   };
 }
@@ -90,9 +99,11 @@ export async function lookupOrder(_: OrderLookupState, formData: FormData): Prom
 export async function createCheckout(_: ActionState, formData: FormData): Promise<ActionState> {
   try {
     const email = String(formData.get("email") ?? "");
+    const phone = String(formData.get("phone") ?? "");
+    const paymentMethod = String(formData.get("paymentMethod") ?? "");
     const itemsJson = String(formData.get("items") ?? "[]");
     const items = JSON.parse(itemsJson);
-    const parsed = checkoutSchema.safeParse({ email, items });
+    const parsed = checkoutSchema.safeParse({ email, phone, paymentMethod: paymentMethod || undefined, items });
     if (!parsed.success) {
       return { ok: false, message: "Invalid checkout data.", errors: parsed.error.flatten().fieldErrors };
     }
@@ -108,15 +119,83 @@ export async function createCheckout(_: ActionState, formData: FormData): Promis
     const currency = selected[0]?.product.currency ?? "USD";
     const downloadToken = createDownloadToken();
     const stripe = getStripe();
+    const mpesa = isMpesaConfigured();
+    const chosen = parsed.data.paymentMethod || (mpesa ? "mpesa" : stripe ? "stripe" : undefined);
 
-    if (stripe) {
+    if (chosen === "mpesa") {
+      if (!mpesa) return { ok: false, message: "M-Pesa is not configured yet. Please try again later." };
+      const normalizedPhone = normalizeKenyanPhone(parsed.data.phone ?? "");
+      if (!normalizedPhone) {
+        return { ok: false, message: "Enter a valid M-Pesa phone number (e.g. 07XXXXXXXX or 2547XXXXXXXX).", errors: { phone: ["Valid M-Pesa phone number required"] } };
+      }
+      if (currency !== "KES") {
+        return { ok: false, message: "M-Pesa checkout currently supports KES pricing only. Please contact support." };
+      }
+
       const [order] = await db
         .insert(orders)
         .values({
           email: parsed.data.email,
+          phone: normalizedPhone,
           totalCents,
           currency,
           status: "pending",
+          paymentMethod: "mpesa",
+          downloadToken,
+        })
+        .returning();
+
+      await db.insert(orderItems).values(
+        selected.map(({ product, quantity }) => ({
+          orderId: order.id,
+          productId: product.id,
+          productName: product.name,
+          unitPriceCents: product.priceCents,
+          quantity,
+          downloadUrl: product.downloadUrl,
+        })),
+      );
+
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+      const callbackUrl = process.env.MPESA_CALLBACK_URL || `${appUrl}/api/webhooks/mpesa`;
+      try {
+        const stk = await initiateStkPush({
+          amount: Math.max(1, Math.round(totalCents / 100)),
+          phone: normalizedPhone,
+          accountReference: `VINDEX-${order.id}`,
+          transactionDesc: `Order ${order.id}`,
+          callbackUrl,
+        });
+        await db.update(orders).set({
+          mpesaCheckoutRequestId: stk.CheckoutRequestID,
+          mpesaMerchantRequestId: stk.MerchantRequestID,
+        }).where(eq(orders.id, order.id));
+        revalidatePath("/admin/orders");
+        return {
+          ok: true,
+          message: "STK push sent. Check your phone and enter your M-Pesa PIN to complete payment.",
+          orderId: order.id,
+          paymentPending: true,
+          checkoutRequestId: stk.CheckoutRequestID,
+          downloadToken,
+        };
+      } catch (e: any) {
+        await db.update(orders).set({ status: "failed" }).where(eq(orders.id, order.id));
+        revalidatePath("/admin/orders");
+        return { ok: false, message: e?.message || "Failed to initiate M-Pesa payment. Please try again." };
+      }
+    }
+
+    if (chosen === "stripe" && stripe) {
+      const [order] = await db
+        .insert(orders)
+        .values({
+          email: parsed.data.email,
+          phone: parsed.data.phone || null,
+          totalCents,
+          currency,
+          status: "pending",
+          paymentMethod: "stripe",
           downloadToken,
         })
         .returning();

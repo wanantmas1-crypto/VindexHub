@@ -17,3 +17,12 @@ export function downloadExpiryDate(days = 7) {
   d.setDate(d.getDate() + days);
   return d.toISOString();
 }
+
+export function createReceiptNumber(orderId: number) {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  const rand = randomBytes(2).toString("hex").toUpperCase();
+  return `VXR-${y}${m}${day}-${String(orderId).padStart(6, "0")}-${rand}`;
+}

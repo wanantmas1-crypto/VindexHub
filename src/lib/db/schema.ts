@@ -74,13 +74,20 @@ export const serviceRequests = sqliteTable("service_requests", {
 export const orders = sqliteTable("orders", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   email: text("email").notNull(),
+  phone: text("phone"),
   totalCents: integer("total_cents").notNull(),
   currency: text("currency").notNull().default("USD"),
-  status: text("status").notNull().default("pending"),
+  status: text("status").notNull().default("pending"), // pending | paid | failed | cancelled
+  paymentMethod: text("payment_method").notNull().default("stripe"),
   stripeSessionId: text("stripe_session_id"),
   stripePaymentIntentId: text("stripe_payment_intent_id"),
+  mpesaCheckoutRequestId: text("mpesa_checkout_request_id"),
+  mpesaMerchantRequestId: text("mpesa_merchant_request_id"),
+  mpesaReceiptNumber: text("mpesa_receipt_number"),
+  receiptNumber: text("receipt_number"),
   downloadToken: text("download_token"),
   downloadExpiresAt: text("download_expires_at"),
+  paidAt: text("paid_at"),
   createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });
 
@@ -98,6 +105,22 @@ export const orderItems = sqliteTable("order_items", {
   downloadUrl: text("download_url"),
   licenseKey: text("license_key"),
   downloadCount: integer("download_count").notNull().default(0),
+});
+
+export const receipts = sqliteTable("receipts", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  orderId: integer("order_id").notNull().references(() => orders.id),
+  receiptNumber: text("receipt_number").notNull().unique(),
+  email: text("email").notNull(),
+  phone: text("phone"),
+  paymentMethod: text("payment_method").notNull(),
+  paymentReference: text("payment_reference"),
+  currency: text("currency").notNull().default("USD"),
+  subtotalCents: integer("subtotal_cents").notNull(),
+  totalCents: integer("total_cents").notNull(),
+  status: text("status").notNull().default("issued"),
+  issuedAt: text("issued_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  payload: text("payload").notNull().default("{}"),
 });
 
 export const siteSettings = sqliteTable("site_settings", {
@@ -127,4 +150,5 @@ export type Service = typeof services.$inferSelect;
 export type ServiceRequest = typeof serviceRequests.$inferSelect;
 export type Order = typeof orders.$inferSelect;
 export type OrderItem = typeof orderItems.$inferSelect;
+export type Receipt = typeof receipts.$inferSelect;
 export type Review = typeof reviews.$inferSelect;
