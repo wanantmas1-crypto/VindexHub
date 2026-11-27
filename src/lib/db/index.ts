@@ -1,23 +1,26 @@
 import "server-only";
 
-import Database from "better-sqlite3";
-import { drizzle } from "drizzle-orm/better-sqlite3";
+import { createClient, type Client } from "@libsql/client";
+import { drizzle } from "drizzle-orm/libsql";
 import * as schema from "./schema";
 
-const databaseUrl = process.env.DATABASE_URL ?? "file:./dev.db";
-const sqlitePath = databaseUrl.replace(/^file:/, "");
+const url = process.env.TURSO_DATABASE_URL ?? process.env.DATABASE_URL ?? "file:./dev.db";
+const authToken = process.env.TURSO_AUTH_TOKEN;
 
 const globalForDb = globalThis as unknown as {
-  sqlite?: Database.Database;
+  client?: Client;
 };
 
-const sqlite =
-  globalForDb.sqlite ??
-  new Database(sqlitePath);
+const client =
+  globalForDb.client ??
+  createClient({
+    url,
+    authToken,
+  });
 
 if (process.env.NODE_ENV !== "production") {
-  globalForDb.sqlite = sqlite;
+  globalForDb.client = client;
 }
 
-export const db = drizzle(sqlite, { schema });
+export const db = drizzle(client, { schema });
 export { schema };

@@ -1,14 +1,15 @@
 import "dotenv/config";
-import Database from "better-sqlite3";
-import { drizzle } from "drizzle-orm/better-sqlite3";
+import { createClient } from "@libsql/client";
+import { drizzle } from "drizzle-orm/libsql";
 import { categories, projects, products, services, reviews, orders, orderItems, serviceRequests, siteSettings } from "./schema";
 
-const dbUrl = process.env.DATABASE_URL ?? "file:./dev.db";
-const sqlite = new Database(dbUrl.replace(/^file:/, ""));
-const db = drizzle(sqlite);
+const url = process.env.TURSO_DATABASE_URL ?? process.env.DATABASE_URL ?? "file:./dev.db";
+const authToken = process.env.TURSO_AUTH_TOKEN;
+const client = createClient({ url, authToken });
+const db = drizzle(client);
 
 async function main() {
-  sqlite.exec(`
+  await client.executeMultiple(`
     CREATE TABLE IF NOT EXISTS site_settings (
       id INTEGER PRIMARY KEY,
       logo_url TEXT,
@@ -42,6 +43,10 @@ async function main() {
       name TEXT NOT NULL,
       description TEXT NOT NULL,
       features TEXT NOT NULL DEFAULT '[]',
+      screenshots TEXT NOT NULL DEFAULT '[]',
+      system_requirements TEXT,
+      changelog TEXT,
+      faqs TEXT NOT NULL DEFAULT '[]',
       price_cents INTEGER NOT NULL,
       currency TEXT NOT NULL DEFAULT 'USD',
       image_url TEXT,
@@ -84,6 +89,7 @@ async function main() {
       stripe_session_id TEXT,
       stripe_payment_intent_id TEXT,
       download_token TEXT,
+      download_expires_at TEXT,
       created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
     CREATE TABLE IF NOT EXISTS order_items (
@@ -93,7 +99,9 @@ async function main() {
       product_name TEXT NOT NULL,
       unit_price_cents INTEGER NOT NULL,
       quantity INTEGER NOT NULL DEFAULT 1,
-      download_url TEXT
+      download_url TEXT,
+      license_key TEXT,
+      download_count INTEGER NOT NULL DEFAULT 0
     );
     CREATE TABLE IF NOT EXISTS reviews (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -109,31 +117,30 @@ async function main() {
     );
   `);
 
-  db.delete(reviews).run();
-  db.delete(orderItems).run();
-  db.delete(orders).run();
-  db.delete(serviceRequests).run();
-  db.delete(services).run();
-  db.delete(products).run();
-  db.delete(projects).run();
-  db.delete(categories).run();
-  db.delete(siteSettings).run();
+  await db.delete(reviews).run();
+  await db.delete(orderItems).run();
+  await db.delete(orders).run();
+  await db.delete(serviceRequests).run();
+  await db.delete(services).run();
+  await db.delete(products).run();
+  await db.delete(projects).run();
+  await db.delete(categories).run();
+  await db.delete(siteSettings).run();
 
-  db.insert(siteSettings).values({ id: 1, logoUrl: null }).run();
+  await db.insert(siteSettings).values({ id: 1, logoUrl: null }).run();
 
-  db.insert(categories).values([
+  await db.insert(categories).values([
     { name: "Business Tools", slug: "business-tools", description: "Software for operations, CRM, and productivity.", active: true },
     { name: "Developer Tools", slug: "developer-tools", description: "Tools that help developers build and ship faster.", active: true },
     { name: "Finance", slug: "finance", description: "Invoicing, payments, and finance-related software.", active: true },
   ]).run();
 
-  db.insert(projects).values([
+  await db.insert(projects).values([
     {
       slug: "vindex-analytics",
       title: "Vindex Analytics",
       summary: "A lightweight analytics dashboard for SaaS teams.",
-      description:
-        "Vindex Analytics is a privacy-focused dashboard that helps teams track key product metrics, conversion funnels, and retention. Built with performance and clarity in mind.",
+      description: "Vindex Analytics is a privacy-focused dashboard that helps teams track key product metrics, conversion funnels, and retention. Built with performance and clarity in mind.",
       techStack: JSON.stringify(["Next.js", "TypeScript", "PostgreSQL", "Tailwind CSS"]),
       imageUrl: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80",
       demoUrl: "https://example.com/demo",
@@ -144,8 +151,7 @@ async function main() {
       slug: "securepay-kit",
       title: "SecurePay Kit",
       summary: "Developer toolkit for secure payment integrations.",
-      description:
-        "SecurePay Kit provides reusable components, webhook handlers, and validation utilities for integrating secure payments into web apps.",
+      description: "SecurePay Kit provides reusable components, webhook handlers, and validation utilities for integrating secure payments into web apps.",
       techStack: JSON.stringify(["Node.js", "Stripe", "Zod", "TypeScript"]),
       imageUrl: "https://images.unsplash.com/photo-1563013544-824ae1b704d3?auto=format&fit=crop&w=1200&q=80",
       demoUrl: "https://example.com/securepay",
@@ -156,8 +162,7 @@ async function main() {
       slug: "opsflow-automation",
       title: "OpsFlow Automation",
       summary: "Automation workflows for internal business operations.",
-      description:
-        "OpsFlow automates repetitive business tasks, approvals, and notifications with an auditable workflow engine.",
+      description: "OpsFlow automates repetitive business tasks, approvals, and notifications with an auditable workflow engine.",
       techStack: JSON.stringify(["React", "Node.js", "SQLite", "BullMQ"]),
       imageUrl: "https://images.unsplash.com/photo-1518186285589-2f7649de83e0?auto=format&fit=crop&w=1200&q=80",
       demoUrl: "https://example.com/opsflow",
@@ -166,20 +171,17 @@ async function main() {
     },
   ]).run();
 
-  db.insert(products).values([
+  await db.insert(products).values([
     {
       categoryId: 1,
       slug: "vindex-crm-pro",
       name: "Vindex CRM Pro",
-      description:
-        "A lightweight CRM software for freelancers and small teams. Manage leads, contacts, deals, and follow-ups in one clean interface.",
-      features: JSON.stringify([
-        "Lead and contact management",
-        "Deal pipeline tracking",
-        "Email reminders",
-        "Exportable reports",
-        "Lifetime license for v1.x",
-      ]),
+      description: "A lightweight CRM software for freelancers and small teams. Manage leads, contacts, deals, and follow-ups in one clean interface.",
+      features: JSON.stringify(["Lead and contact management", "Deal pipeline tracking", "Email reminders", "Exportable reports", "Lifetime license for v1.x"]),
+      screenshots: "[]",
+      systemRequirements: "Windows 10+/macOS 12+/Linux, 4GB RAM, 500MB disk space, modern browser for web dashboard.",
+      changelog: "v1.2.0 - Improved pipeline view, faster exports, bug fixes.",
+      faqs: JSON.stringify([{ q: "Is this a one-time purchase?", a: "Yes, you get a lifetime license for v1.x updates." }, { q: "Do I get a license key?", a: "Yes, a license key is generated after purchase." }]),
       priceCents: 7900,
       currency: "USD",
       imageUrl: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1200&q=80",
@@ -192,14 +194,12 @@ async function main() {
       categoryId: 2,
       slug: "deploy-guard",
       name: "Deploy Guard",
-      description:
-        "A release checklist and deployment safety tool for developers. Prevent risky releases with configurable pre-deploy checks.",
-      features: JSON.stringify([
-        "Pre-deploy checklist rules",
-        "CI integration templates",
-        "Rollback readiness checks",
-        "Team audit log",
-      ]),
+      description: "A release checklist and deployment safety tool for developers. Prevent risky releases with configurable pre-deploy checks.",
+      features: JSON.stringify(["Pre-deploy checklist rules", "CI integration templates", "Rollback readiness checks", "Team audit log"]),
+      screenshots: "[]",
+      systemRequirements: "Node.js 18+, Git, CI environment (optional).",
+      changelog: "v2.0.1 - New CI templates, improved audit log, security fixes.",
+      faqs: JSON.stringify([{ q: "Does it work with GitHub Actions?", a: "Yes, CI templates are included." }]),
       priceCents: 4900,
       currency: "USD",
       imageUrl: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80",
@@ -212,14 +212,12 @@ async function main() {
       categoryId: 3,
       slug: "invoice-sprint",
       name: "Invoice Sprint",
-      description:
-        "Simple invoicing software for developers and agencies. Create branded invoices, track payments, and export records.",
-      features: JSON.stringify([
-        "Branded invoice templates",
-        "Payment status tracking",
-        "PDF export",
-        "Client records",
-      ]),
+      description: "Simple invoicing software for developers and agencies. Create branded invoices, track payments, and export records.",
+      features: JSON.stringify(["Branded invoice templates", "Payment status tracking", "PDF export", "Client records"]),
+      screenshots: "[]",
+      systemRequirements: "Modern browser, internet connection for cloud sync (optional).",
+      changelog: "v1.0.4 - PDF export improvements and minor fixes.",
+      faqs: JSON.stringify([{ q: "Can I export PDFs?", a: "Yes, branded PDF export is included." }]),
       priceCents: 3900,
       currency: "USD",
       imageUrl: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=1200&q=80",
@@ -230,18 +228,12 @@ async function main() {
     },
   ]).run();
 
-  db.insert(services).values([
+  await db.insert(services).values([
     {
       slug: "custom-software-development",
       name: "Custom Software Development",
-      description:
-        "End-to-end development for web apps, internal tools, and MVPs tailored to your business needs.",
-      deliverables: JSON.stringify([
-        "Technical planning",
-        "UI implementation",
-        "Backend/API development",
-        "Deployment support",
-      ]),
+      description: "End-to-end development for web apps, internal tools, and MVPs tailored to your business needs.",
+      deliverables: JSON.stringify(["Technical planning", "UI implementation", "Backend/API development", "Deployment support"]),
       startingPriceCents: 150000,
       currency: "USD",
       active: true,
@@ -249,14 +241,8 @@ async function main() {
     {
       slug: "api-integration",
       name: "API & Payment Integration",
-      description:
-        "Integrate third-party APIs, payment gateways, and automation workflows securely into your product.",
-      deliverables: JSON.stringify([
-        "Integration architecture",
-        "Secure implementation",
-        "Webhook handling",
-        "Testing and documentation",
-      ]),
+      description: "Integrate third-party APIs, payment gateways, and automation workflows securely into your product.",
+      deliverables: JSON.stringify(["Integration architecture", "Secure implementation", "Webhook handling", "Testing and documentation"]),
       startingPriceCents: 80000,
       currency: "USD",
       active: true,
@@ -264,21 +250,15 @@ async function main() {
     {
       slug: "maintenance-support",
       name: "Maintenance & Support",
-      description:
-        "Ongoing support, bug fixes, performance improvements, and feature updates for existing software.",
-      deliverables: JSON.stringify([
-        "Bug fixes",
-        "Performance tuning",
-        "Security updates",
-        "Monthly support report",
-      ]),
+      description: "Ongoing support, bug fixes, performance improvements, and feature updates for existing software.",
+      deliverables: JSON.stringify(["Bug fixes", "Performance tuning", "Security updates", "Monthly support report"]),
       startingPriceCents: 50000,
       currency: "USD",
       active: true,
     },
   ]).run();
 
-  db.insert(reviews).values([
+  await db.insert(reviews).values([
     {
       productId: 1,
       authorName: "Amina K.",

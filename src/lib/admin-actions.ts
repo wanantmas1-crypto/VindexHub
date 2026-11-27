@@ -10,6 +10,7 @@ import { categorySchema, productSchema, projectSchema, serviceSchema } from "./v
 import { slugify } from "./utils";
 import { mkdir, writeFile } from "fs/promises";
 import path from "path";
+import { put } from "@vercel/blob";
 
 export type AdminActionState = { ok: boolean; message: string };
 
@@ -212,12 +213,23 @@ export async function saveSiteLogo(_: AdminActionState, formData: FormData): Pro
 
   const ext = file.type === "image/svg+xml" ? "svg" : file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
   const filename = `logo-${Date.now()}.${ext}`;
-  const uploadDir = path.join(process.cwd(), "public", "uploads");
-  await mkdir(uploadDir, { recursive: true });
-  const bytes = Buffer.from(await file.arrayBuffer());
-  await writeFile(path.join(uploadDir, filename), bytes);
 
-  const logoUrl = `/uploads/${filename}`;
+  let logoUrl: string;
+  if (process.env.BLOB_READ_WRITE_TOKEN) {
+    const blob = await put(`uploads/${filename}`, file, {
+      access: "public",
+      contentType: file.type,
+      addRandomSuffix: false,
+    });
+    logoUrl = blob.url;
+  } else {
+    const uploadDir = path.join(process.cwd(), "public", "uploads");
+    await mkdir(uploadDir, { recursive: true });
+    const bytes = Buffer.from(await file.arrayBuffer());
+    await writeFile(path.join(uploadDir, filename), bytes);
+    logoUrl = `/uploads/${filename}`;
+  }
+
   await db
     .insert(siteSettings)
     .values({ id: 1, logoUrl, updatedAt: new Date().toISOString() })
