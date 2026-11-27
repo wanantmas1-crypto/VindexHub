@@ -1,36 +1,45 @@
 import Link from "next/link";
 import { Container } from "./container";
 
+const explore = [
+  { href: "/products", label: "Shop" },
+  { href: "/services", label: "Services" },
+  { href: "/reviews", label: "Reviews" },
+  { href: "/projects", label: "Projects" },
+];
+
+const legal = [
+  { href: "/privacy", label: "Privacy" },
+  { href: "/terms", label: "Terms" },
+  { href: "/refund-policy", label: "Refunds" },
+];
+
 export function SiteFooter() {
   return (
-    <footer className="border-t border-border bg-surface">
-      <Container className="grid gap-10 py-12 md:grid-cols-[1.4fr_1fr_1fr]">
-        <div>
-          <div className="text-lg font-semibold tracking-tight"><span className="text-primary">Vindex</span> Hub</div>
-          <p className="mt-3 max-w-sm text-sm leading-6 text-muted">
-            Portfolio, digital products, and professional services built with quality and clarity.
-          </p>
-        </div>
-        <div>
-          <div className="text-sm font-semibold text-text">Explore</div>
-          <div className="mt-4 flex flex-col gap-2.5 text-sm text-muted">
-            <Link href="/products" className="transition hover:text-text">Shop</Link>
-            <Link href="/services" className="transition hover:text-text">Services</Link>
-            <Link href="/reviews" className="transition hover:text-text">Reviews</Link>
-            <Link href="/projects" className="transition hover:text-text">Projects</Link>
+    <footer className="border-t border-border/70 bg-surface/60 backdrop-blur-sm">
+      <Container className="py-8">
+        <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-center gap-3">
+            <div className="text-base font-semibold tracking-tight"><span className="text-primary">Vindex</span> Hub</div>
+            <span className="hidden h-4 w-px bg-border sm:block" />
+            <p className="text-sm text-muted hidden sm:block">Digital products & services</p>
           </div>
+
+          <nav className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-muted" aria-label="Footer navigation">
+            {explore.map((l) => (
+              <Link key={l.href} href={l.href} className="transition hover:text-text">{l.label}</Link>
+            ))}
+            <span className="hidden sm:inline h-4 w-px bg-border" />
+            {legal.map((l) => (
+              <Link key={l.href} href={l.href} className="transition hover:text-text">{l.label}</Link>
+            ))}
+          </nav>
         </div>
-        <div>
-          <div className="text-sm font-semibold text-text">Legal</div>
-          <div className="mt-4 flex flex-col gap-2.5 text-sm text-muted">
-            <Link href="/privacy" className="transition hover:text-text">Privacy Policy</Link>
-            <Link href="/terms" className="transition hover:text-text">Terms & License</Link>
-            <Link href="/refund-policy" className="transition hover:text-text">Refund Policy</Link>
-          </div>
+
+        <div className="mt-6 flex flex-col gap-2 border-t border-border/60 pt-4 text-xs text-muted sm:flex-row sm:items-center sm:justify-between">
+          <p>© {new Date().getFullYear()} Vindex Hub. All rights reserved.</p>
+          <p>Built with care in Kenya.</p>
         </div>
-      </Container>
-      <Container className="border-t border-border py-5 text-sm text-muted">
-        © {new Date().getFullYear()} Vindex Hub. All rights reserved.
       </Container>
     </footer>
   );

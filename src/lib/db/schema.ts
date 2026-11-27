@@ -140,6 +140,7 @@ export const reviews = sqliteTable("reviews", {
   rating: integer("rating").notNull(),
   comment: text("comment").notNull(),
   screenshotUrl: text("screenshot_url"),
+  source: text("source").notNull().default("web"),
   status: text("status").notNull().default("pending"),
   verifiedBuyer: integer("verified_buyer", { mode: "boolean" }).notNull().default(false),
   createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),

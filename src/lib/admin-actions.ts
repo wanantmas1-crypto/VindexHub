@@ -175,6 +175,8 @@ export async function deleteProject(formData: FormData) {
   revalidatePath("/");
 }
 
+const REVIEW_SOURCES = ["web", "whatsapp", "telegram", "instagram", "x"] as const;
+
 export async function setReviewStatus(formData: FormData) {
   await requireAdminSession();
   const id = Number(formData.get("id"));
@@ -184,6 +186,17 @@ export async function setReviewStatus(formData: FormData) {
   revalidatePath("/reviews");
   revalidatePath("/products");
   revalidatePath("/services");
+  revalidatePath("/admin/reviews");
+}
+
+export async function setReviewSource(formData: FormData) {
+  await requireAdminSession();
+  const id = Number(formData.get("id"));
+  const source = String(formData.get("source"));
+  if (!id || !REVIEW_SOURCES.includes(source as any)) return;
+  await db.update(reviews).set({ source }).where(eq(reviews.id, id));
+  revalidatePath("/reviews");
+  revalidatePath("/products");
   revalidatePath("/admin/reviews");
 }
 

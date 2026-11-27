@@ -8,6 +8,7 @@ type Props = {
   speed?: number;
   startDelay?: number;
   withSound?: boolean;
+  onComplete?: () => void;
 };
 
 let sharedCtx: AudioContext | null = null;
@@ -48,11 +49,12 @@ function playTick() {
   osc.stop(ctx.currentTime + 0.035);
 }
 
-export function TypewriterText({ text, className, speed = 22, startDelay = 0, withSound = false }: Props) {
+export function TypewriterText({ text, className, speed = 22, startDelay = 0, withSound = false, onComplete }: Props) {
   const ref = useRef<HTMLSpanElement | null>(null);
   const [started, setStarted] = useState(false);
   const [count, setCount] = useState(0);
   const [done, setDone] = useState(false);
+  const doneCalledRef = useRef(false);
 
   useEffect(() => {
     const el = ref.current;
@@ -95,6 +97,12 @@ export function TypewriterText({ text, className, speed = 22, startDelay = 0, wi
     }, startDelay);
     return () => clearTimeout(timeout);
   }, [started, done, speed, startDelay, text.length, withSound]);
+
+  useEffect(() => {
+    if (!done || doneCalledRef.current) return;
+    doneCalledRef.current = true;
+    onComplete?.();
+  }, [done, onComplete]);
 
   const shown = text.slice(0, count);
 

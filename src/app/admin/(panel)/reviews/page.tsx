@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { getAllReviews } from "@/lib/data";
-import { setReviewStatus } from "@/lib/admin-actions";
+import { setReviewStatus, setReviewSource } from "@/lib/admin-actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ReviewScreenshotForm } from "./review-screenshot-form";
@@ -17,7 +17,7 @@ export default async function AdminReviewsPage() {
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <div className="font-medium">{review.authorName} <span className="text-muted font-normal">({review.authorEmail})</span></div>
-                <div className="text-sm text-muted">Rating: {review.rating}/5 • {review.productId ? `Product #${review.productId}` : ""}{review.serviceId ? `Service #${review.serviceId}` : ""}</div>
+                <div className="text-sm text-muted">Rating: {review.rating}/5 • {(review as any).source ?? "web"} • {review.productId ? `Product #${review.productId}` : ""}{review.serviceId ? `Service #${review.serviceId}` : ""}</div>
               </div>
               <Badge variant={review.status === "approved" ? "success" : review.status === "rejected" ? "danger" : "warning"}>{review.status}</Badge>
             </div>
@@ -28,6 +28,16 @@ export default async function AdminReviewsPage() {
               </div>
             )}
             <ReviewScreenshotForm reviewId={review.id} />
+            <form action={setReviewSource} className="mt-3 flex flex-wrap items-end gap-2">
+              <input type="hidden" name="id" value={review.id} />
+              <div>
+                <label className="mb-1 block text-xs font-medium text-muted">Testimonial source</label>
+                <select name="source" defaultValue={(review as any).source ?? "web"} className="h-9 rounded-lg border border-border bg-bg px-2 text-sm text-text">
+                  {["web", "whatsapp", "telegram", "instagram", "x"].map((s) => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
+              <Button type="submit" size="sm" variant="secondary">Save source</Button>
+            </form>
             <div className="mt-4 flex gap-2">
               {["approved", "pending", "rejected"].map((status) => (
                 <form key={status} action={setReviewStatus}>
