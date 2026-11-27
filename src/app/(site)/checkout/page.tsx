@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { Suspense, useActionState, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Lock, ArrowRight } from "lucide-react";
@@ -13,7 +13,7 @@ import { formatPrice } from "@/lib/utils";
 
 const initial: ActionState = { ok: false, message: "" };
 
-export default function CheckoutPage() {
+function CheckoutContent() {
   const { items, clearCart } = useCartStore();
   const [mounted, setMounted] = useState(false);
   const [state, action, pending] = useActionState(createCheckout, initial);
@@ -81,5 +81,13 @@ export default function CheckoutPage() {
         </div>
       </Container>
     </main>
+  );
+}
+
+export default function CheckoutPage() {
+  return (
+    <Suspense fallback={<main className="py-14"><Container><p className="text-muted">Loading checkout...</p></Container></main>}>
+      <CheckoutContent />
+    </Suspense>
   );
 }
