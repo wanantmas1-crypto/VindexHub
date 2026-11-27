@@ -14,10 +14,10 @@ export function SiteFooter() {
         <div>
           <div className="text-sm font-semibold text-text">Explore</div>
           <div className="mt-4 flex flex-col gap-2.5 text-sm text-muted">
-            <Link href="/projects" className="transition hover:text-text">Projects</Link>
             <Link href="/products" className="transition hover:text-text">Shop</Link>
             <Link href="/services" className="transition hover:text-text">Services</Link>
             <Link href="/reviews" className="transition hover:text-text">Reviews</Link>
+            <Link href="/projects" className="transition hover:text-text">Projects</Link>
           </div>
         </div>
         <div>

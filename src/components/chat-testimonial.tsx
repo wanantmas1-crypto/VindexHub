@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { MessageCircle, Send, Bell, CheckCheck } from "lucide-react";
 import { Star } from "lucide-react";
 import { TypewriterText } from "./typewriter-text";
@@ -10,6 +11,7 @@ type Review = {
   authorName: string;
   rating: number;
   comment: string;
+  screenshotUrl?: string | null;
   verifiedBuyer: boolean;
   createdAt: Date | string;
 };
@@ -132,9 +134,14 @@ export function ChatTestimonial({ review, index }: { review: Review; index: numb
             </div>
           )}
           {phase === "message" && (
-            <p className="text-sm leading-6">
-              <TypewriterText text={review.comment} speed={18} withSound />
-            </p>
+            <div className="space-y-2">
+              <p className="text-sm leading-6">
+                <TypewriterText text={review.comment} speed={18} withSound />
+              </p>
+              {review.screenshotUrl && (
+                <Image src={review.screenshotUrl} alt={`Screenshot shared by ${review.authorName}`} width={480} height={270} className="mt-2 max-h-56 w-full rounded-lg border border-border/60 object-cover" unoptimized />
+              )}
+            </div>
           )}
           <div className={`mt-2 flex items-center justify-end gap-1 text-[10px] ${s.meta}`}>
             <span>{review.verifiedBuyer ? "Verified buyer" : "Client"} • {time}</span>

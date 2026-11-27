@@ -13,9 +13,9 @@ export default async function ProjectsPage() {
     <main className="py-14 sm:py-16">
       <Container>
         <div data-reveal>
-          <p className="text-sm font-semibold uppercase tracking-wider text-primary">Portfolio</p>
-          <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">Projects</h1>
-          <p className="mt-3 max-w-2xl leading-7 text-muted">A showcase of work we’ve designed, built, and delivered.</p>
+          <p className="text-sm font-semibold uppercase tracking-wider text-primary">Our Work</p>
+          <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">Projects Built with People in Mind</h1>
+          <p className="mt-3 max-w-2xl leading-7 text-muted">Every project here started with a real problem and a real conversation. Here’s a look at what we’ve built, learned, and shipped alongside our clients.</p>
         </div>
         <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {projects.map((project, i) => (

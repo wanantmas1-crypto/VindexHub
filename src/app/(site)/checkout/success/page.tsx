@@ -7,6 +7,7 @@ import { eq } from "drizzle-orm";
 import { formatPrice } from "@/lib/utils";
 import { ClearCartOnMount } from "@/components/clear-cart-on-mount";
 import { AutoDownloadReceipt } from "@/components/auto-download-receipt";
+import { PaymentSuccessSound } from "@/components/payment-success-sound";
 import { verifyPaystackTransaction } from "@/lib/paystack";
 import { fulfillPaidOrder } from "@/lib/fulfillment";
 
@@ -40,6 +41,7 @@ export default async function CheckoutSuccessPage({ searchParams }: PageProps<"/
           {valid ? (
             <>
               <ClearCartOnMount />
+              {order!.status === "paid" && <PaymentSuccessSound />}
               {order!.status === "paid" && <AutoDownloadReceipt orderId={order!.id} token={token as string} />}
               <div className={`inline-flex h-12 w-12 items-center justify-center rounded-2xl ${order!.status === "paid" ? "bg-green-50 text-success dark:bg-green-950/40" : "bg-amber-50 text-amber-600 dark:bg-amber-950/40"}`}>
                 <CheckCircle2 className="h-6 w-6" />

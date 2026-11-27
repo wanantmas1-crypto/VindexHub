@@ -7,10 +7,10 @@ import { SoundToggle } from "./sound-toggle";
 import { getSiteSettings } from "@/lib/data";
 
 const nav = [
-  { href: "/projects", label: "Projects" },
   { href: "/products", label: "Shop" },
   { href: "/services", label: "Services" },
   { href: "/reviews", label: "Reviews" },
+  { href: "/projects", label: "Projects" },
 ];
 
 export async function SiteHeader() {

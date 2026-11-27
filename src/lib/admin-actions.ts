@@ -187,6 +187,48 @@ export async function setReviewStatus(formData: FormData) {
   revalidatePath("/admin/reviews");
 }
 
+export async function saveReviewScreenshot(_: AdminActionState, formData: FormData): Promise<AdminActionState> {
+  await requireAdminSession();
+  const id = Number(formData.get("id"));
+  const file = formData.get("screenshot");
+  if (!id) return { ok: false, message: "Invalid review." };
+  if (!(file instanceof File) || file.size === 0) {
+    return { ok: false, message: "Please select a screenshot to upload." };
+  }
+  const allowed = ["image/png", "image/jpeg", "image/webp"];
+  if (!allowed.includes(file.type)) {
+    return { ok: false, message: "Only PNG, JPG, or WEBP files are allowed." };
+  }
+  if (file.size > 4 * 1024 * 1024) {
+    return { ok: false, message: "Screenshot must be 4MB or smaller." };
+  }
+
+  const ext = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
+  const filename = `review-${id}-${Date.now()}.${ext}`;
+
+  let screenshotUrl: string;
+  if (process.env.BLOB_READ_WRITE_TOKEN) {
+    const blob = await put(`uploads/reviews/${filename}`, file, {
+      access: "public",
+      contentType: file.type,
+      addRandomSuffix: false,
+    });
+    screenshotUrl = blob.url;
+  } else {
+    const uploadDir = path.join(process.cwd(), "public", "uploads", "reviews");
+    await mkdir(uploadDir, { recursive: true });
+    const bytes = Buffer.from(await file.arrayBuffer());
+    await writeFile(path.join(uploadDir, filename), bytes);
+    screenshotUrl = `/uploads/reviews/${filename}`;
+  }
+
+  await db.update(reviews).set({ screenshotUrl }).where(eq(reviews.id, id));
+  revalidatePath("/reviews");
+  revalidatePath("/products");
+  revalidatePath("/admin/reviews");
+  return { ok: true, message: "Review screenshot uploaded." };
+}
+
 export async function setServiceRequestStatus(formData: FormData) {
   await requireAdminSession();
   const id = Number(formData.get("id"));
