@@ -6,6 +6,7 @@ import { orderItems, orders } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { formatPrice } from "@/lib/utils";
 import { ClearCartOnMount } from "@/components/clear-cart-on-mount";
+import { AutoDownloadReceipt } from "@/components/auto-download-receipt";
 import { verifyPaystackTransaction } from "@/lib/paystack";
 import { fulfillPaidOrder } from "@/lib/fulfillment";
 
@@ -39,6 +40,7 @@ export default async function CheckoutSuccessPage({ searchParams }: PageProps<"/
           {valid ? (
             <>
               <ClearCartOnMount />
+              {order!.status === "paid" && <AutoDownloadReceipt orderId={order!.id} token={token as string} />}
               <div className={`inline-flex h-12 w-12 items-center justify-center rounded-2xl ${order!.status === "paid" ? "bg-green-50 text-success dark:bg-green-950/40" : "bg-amber-50 text-amber-600 dark:bg-amber-950/40"}`}>
                 <CheckCircle2 className="h-6 w-6" />
               </div>
@@ -74,6 +76,8 @@ export default async function CheckoutSuccessPage({ searchParams }: PageProps<"/
               </div>
               <div className="mt-5 flex flex-wrap gap-3 text-sm">
                 <Link href={`/orders/${order!.id}/receipt?token=${token}`} className="text-primary hover:underline">View receipt</Link>
+                <span className="text-muted">•</span>
+                <a href={`/api/receipts/${order!.id}?token=${token}`} className="text-primary hover:underline">Download receipt</a>
                 <span className="text-muted">•</span>
                 <span className="text-muted">Need help later? Use <Link href="/orders/lookup" className="text-primary hover:underline">Order Lookup</Link> with your email and order ID.</span>
               </div>
