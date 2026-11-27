@@ -6,13 +6,31 @@ import { orderItems, orders } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { formatPrice } from "@/lib/utils";
 import { ClearCartOnMount } from "@/components/clear-cart-on-mount";
+import { verifyPaystackTransaction } from "@/lib/paystack";
+import { fulfillPaidOrder } from "@/lib/fulfillment";
 
 export default async function CheckoutSuccessPage({ searchParams }: PageProps<"/checkout/success">) {
-  const { order: orderId, token } = await searchParams;
+  const params = await searchParams;
+  const orderId = params.order;
+  const token = params.token;
+  const reference = typeof params.reference === "string" ? params.reference : typeof params.trxref === "string" ? params.trxref : undefined;
   const id = Number(orderId);
-  const order = Number.isFinite(id) ? await db.query.orders.findFirst({ where: eq(orders.id, id) }) : null;
+  let order = Number.isFinite(id) ? await db.query.orders.findFirst({ where: eq(orders.id, id) }) : null;
   const valid = order && typeof token === "string" && order.downloadToken === token;
-  const items = valid ? await db.select().from(orderItems).where(eq(orderItems.orderId, order!.id)) : [];
+
+  if (valid && order!.status === "pending" && order!.paymentMethod === "paystack" && reference) {
+    try {
+      const tx = await verifyPaystackTransaction(reference);
+      if (tx.status === "success") {
+        await fulfillPaidOrder({ orderId: order!.id, paymentReference: tx.reference, paymentMethod: "paystack" });
+        order = await db.query.orders.findFirst({ where: eq(orders.id, id) });
+      }
+    } catch (e) {
+      console.error("[checkout/success] paystack verify failed", e);
+    }
+  }
+
+  const items = valid && order ? await db.select().from(orderItems).where(eq(orderItems.orderId, order.id)) : [];
 
   return (
     <main className="py-14 sm:py-16">

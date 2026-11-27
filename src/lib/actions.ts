@@ -8,7 +8,7 @@ import { orders, orderItems, reviews, serviceRequests } from "./db/schema";
 import { checkoutSchema, reviewSchema, serviceRequestSchema } from "./validators";
 import { getStripe, isStripeConfigured } from "./stripe";
 import { createDownloadToken } from "./orders";
-import { isMpesaConfigured, initiateStkPush, normalizeKenyanPhone } from "./mpesa";
+import { isPaystackConfigured, initializePaystackTransaction } from "./paystack";
 
 export type ActionState = {
   ok: boolean;
@@ -121,28 +121,21 @@ export async function createCheckout(_: ActionState, formData: FormData): Promis
     const currency = selected[0]?.product.currency ?? "KES";
     const downloadToken = createDownloadToken();
     const stripe = getStripe();
-    const mpesa = isMpesaConfigured();
-    const chosen = parsed.data.paymentMethod || (mpesa ? "mpesa" : stripe ? "stripe" : undefined);
+    const paystack = isPaystackConfigured();
+    const chosen = parsed.data.paymentMethod || (paystack ? "paystack" : stripe ? "stripe" : undefined);
 
-    if (chosen === "mpesa") {
-      if (!mpesa) return { ok: false, message: "M-Pesa is not configured yet. Please try again later." };
-      const normalizedPhone = normalizeKenyanPhone(parsed.data.phone ?? "");
-      if (!normalizedPhone) {
-        return { ok: false, message: "Enter a valid M-Pesa phone number (e.g. 07XXXXXXXX or 2547XXXXXXXX).", errors: { phone: ["Valid M-Pesa phone number required"] } };
-      }
-      if (currency !== "KES") {
-        return { ok: false, message: "M-Pesa checkout currently supports KES pricing only. Please set product currency to KES in admin, or contact support." };
-      }
+    if (chosen === "paystack") {
+      if (!paystack) return { ok: false, message: "Paystack is not configured yet. Please try again later." };
 
       const [order] = await db
         .insert(orders)
         .values({
           email: parsed.data.email,
-          phone: normalizedPhone,
+          phone: parsed.data.phone || null,
           totalCents,
           currency,
           status: "pending",
-          paymentMethod: "mpesa",
+          paymentMethod: "paystack",
           downloadToken,
         })
         .returning();
@@ -159,32 +152,23 @@ export async function createCheckout(_: ActionState, formData: FormData): Promis
       );
 
       const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-      const callbackUrl = process.env.MPESA_CALLBACK_URL || `${appUrl}/api/webhooks/mpesa`;
+      const reference = `VINDEX-${order.id}-${downloadToken.slice(0, 8)}`;
       try {
-        const stk = await initiateStkPush({
-          amount: Math.max(1, Math.round(totalCents / 100)),
-          phone: normalizedPhone,
-          accountReference: `VINDEX-${order.id}`,
-          transactionDesc: `Order ${order.id}`,
-          callbackUrl,
+        const init = await initializePaystackTransaction({
+          email: parsed.data.email,
+          amount: totalCents,
+          currency,
+          reference,
+          callbackUrl: `${appUrl}/checkout/success?order=${order.id}&token=${downloadToken}`,
+          metadata: { orderId: order.id, downloadToken },
         });
-        await db.update(orders).set({
-          mpesaCheckoutRequestId: stk.CheckoutRequestID,
-          mpesaMerchantRequestId: stk.MerchantRequestID,
-        }).where(eq(orders.id, order.id));
+        await db.update(orders).set({ stripeSessionId: init.reference }).where(eq(orders.id, order.id));
         revalidatePath("/admin/orders");
-        return {
-          ok: true,
-          message: "STK push sent. Check your phone and enter your M-Pesa PIN to complete payment.",
-          orderId: order.id,
-          paymentPending: true,
-          checkoutRequestId: stk.CheckoutRequestID,
-          downloadToken,
-        };
+        redirect(init.authorization_url);
       } catch (e: any) {
-        await db.update(orders).set({ status: "failed" }).where(eq(orders.id, order.id));
+        await db.update(orders).set({ status: "failed", paymentFailureReason: e?.message?.slice(0, 255) ?? "Paystack init failed" }).where(eq(orders.id, order.id));
         revalidatePath("/admin/orders");
-        return { ok: false, message: e?.message || "Failed to initiate M-Pesa payment. Please try again." };
+        return { ok: false, message: e?.message || "Failed to initialize Paystack payment. Please try again." };
       }
     }
 

@@ -43,6 +43,7 @@ export async function fulfillPaidOrder(input: FulfillPaymentInput) {
         downloadExpiresAt,
         receiptNumber,
         mpesaReceiptNumber: input.paymentReference ?? order.mpesaReceiptNumber,
+        stripePaymentIntentId: input.paymentReference ?? order.stripePaymentIntentId,
         phone: input.phone ?? order.phone,
         paymentMethod: input.paymentMethod ?? order.paymentMethod,
       })
@@ -78,7 +79,7 @@ export async function fulfillPaidOrder(input: FulfillPaymentInput) {
           email: updated.email,
           phone: updated.phone,
           paymentMethod: updated.paymentMethod,
-          paymentReference: updated.mpesaReceiptNumber ?? input.paymentReference ?? null,
+          paymentReference: input.paymentReference ?? updated.mpesaReceiptNumber ?? updated.stripePaymentIntentId ?? null,
           currency: updated.currency,
           subtotalCents: updated.totalCents,
           totalCents: updated.totalCents,
