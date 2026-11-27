@@ -19,5 +19,6 @@ export async function GET(request: Request) {
     status: order.status,
     receiptNumber: order.receiptNumber,
     paidAt: order.paidAt,
+    failureReason: (order as any).paymentFailureReason ?? null,
   });
 }

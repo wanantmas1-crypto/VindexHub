@@ -30,10 +30,14 @@ export async function POST(request: Request) {
         phone: parsed.phone ?? order.phone,
         paymentMethod: "mpesa",
       });
+      await db.update(orders).set({ paymentFailureReason: null }).where(eq(orders.id, order.id));
     } else {
       // Only mark failed if still pending; don't overwrite paid.
       if (order.status === "pending") {
-        await db.update(orders).set({ status: "failed" }).where(eq(orders.id, order.id));
+        await db.update(orders).set({
+          status: "failed",
+          paymentFailureReason: `${parsed.resultCode}: ${parsed.resultDesc}`.slice(0, 255),
+        }).where(eq(orders.id, order.id));
       }
     }
 

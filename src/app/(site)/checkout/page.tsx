@@ -18,6 +18,7 @@ function CheckoutContent() {
   const [mounted, setMounted] = useState(false);
   const [state, action, pending] = useActionState(createCheckout, initial);
   const [pollStatus, setPollStatus] = useState<string | null>(null);
+  const [failureReason, setFailureReason] = useState<string | null>(null);
   const searchParams = useSearchParams();
   const router = useRouter();
   const canceled = searchParams.get("canceled") === "1";
@@ -53,6 +54,7 @@ function CheckoutContent() {
         }
         if (data.status === "failed" || data.status === "cancelled") {
           setPollStatus(data.status);
+          if (data.failureReason) setFailureReason(data.failureReason);
           return;
         }
       } catch {}
@@ -92,7 +94,7 @@ function CheckoutContent() {
                 {pollStatus === "paid"
                   ? "Redirecting to your order..."
                   : pollStatus === "failed"
-                  ? "The M-Pesa payment was not completed. You can try again with a new checkout."
+                  ? `The M-Pesa payment was not completed.${failureReason ? ` Reason: ${failureReason}` : ""} You can try again with a new checkout.`
                   : pollStatus === "timeout"
                   ? "We haven't received confirmation yet. If you completed payment, use Order Lookup in a moment."
                   : state.message}

@@ -85,6 +85,7 @@ export const orders = sqliteTable("orders", {
   mpesaCheckoutRequestId: text("mpesa_checkout_request_id"),
   mpesaMerchantRequestId: text("mpesa_merchant_request_id"),
   mpesaReceiptNumber: text("mpesa_receipt_number"),
+  paymentFailureReason: text("payment_failure_reason"),
   receiptNumber: text("receipt_number"),
   downloadToken: text("download_token"),
   downloadExpiresAt: text("download_expires_at"),
