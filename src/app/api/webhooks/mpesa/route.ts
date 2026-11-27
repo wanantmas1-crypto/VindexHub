@@ -32,12 +32,20 @@ export async function POST(request: Request) {
       });
       await db.update(orders).set({ paymentFailureReason: null }).where(eq(orders.id, order.id));
     } else {
-      // Only mark failed if still pending; don't overwrite paid.
-      if (order.status === "pending") {
-        await db.update(orders).set({
-          status: "failed",
-          paymentFailureReason: `${parsed.resultCode}: ${parsed.resultDesc}`.slice(0, 255),
-        }).where(eq(orders.id, order.id));
+      // Known terminal failures. Unknown/non-terminal codes (e.g. 4999 "still processing") must not be marked failed.
+      const terminalFailures = new Set([1, 1032, 1037, 2001, 1001, 1019, 1025, 9999]);
+      const reason = `${parsed.resultCode}: ${parsed.resultDesc}`.slice(0, 255);
+      const descLower = (parsed.resultDesc || "").toLowerCase();
+      const terminal4999 = parsed.resultCode === 4999 && /wrong credential|invalid credential|authentication/.test(descLower);
+      if (terminalFailures.has(parsed.resultCode) || terminal4999) {
+        if (order.status === "pending") {
+          await db.update(orders).set({ status: "failed", paymentFailureReason: reason }).where(eq(orders.id, order.id));
+        }
+      } else {
+        // Keep pending for unknown/processing codes (e.g. 4999 still processing); store reason for visibility.
+        if (order.status === "pending") {
+          await db.update(orders).set({ paymentFailureReason: reason }).where(eq(orders.id, order.id));
+        }
       }
     }
 
