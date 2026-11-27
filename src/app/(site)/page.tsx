@@ -12,56 +12,71 @@ export default async function HomePage() {
 
   return (
     <main>
-      <section className="relative overflow-hidden border-b border-border bg-gradient-to-b from-slate-50 via-white to-white dark:from-slate-950 dark:via-bg dark:to-bg">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(59,130,246,0.10),_transparent_55%)] dark:bg-[radial-gradient(ellipse_at_top,_rgba(59,130,246,0.18),_transparent_50%)]" />
-        <Container className="relative py-16 sm:py-20 lg:py-24">
-          <div className="max-w-3xl">
-            <Badge className="gap-1.5 px-3 py-1.5">
+      <section className="relative overflow-hidden border-b border-border bg-bg">
+        <video
+          className="hero-video"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          poster="https://images.pexels.com/videos/3129576/free-video-3129576.jpg?auto=compress&cs=tinysrgb&w=1600"
+        >
+          <source src="https://videos.pexels.com/video-files/3129576/3129576-hd_1920_1080_30fps.mp4" type="video/mp4" />
+        </video>
+        <div className="hero-video-overlay" />
+        <div className="pointer-events-none absolute -left-20 top-16 h-72 w-72 rounded-full bg-primary/20 blur-3xl animate-glow" />
+        <div className="pointer-events-none absolute right-0 bottom-0 h-80 w-80 rounded-full bg-cyan-400/10 blur-3xl animate-glow" style={{ animationDelay: "2s" }} />
+
+        <Container className="relative py-20 sm:py-24 lg:py-32">
+          <div className="max-w-3xl" data-reveal>
+            <Badge className="gap-1.5 px-3 py-1.5 backdrop-blur-sm bg-surface/70">
               <Sparkles className="h-3.5 w-3.5" />
               Vindex Hub Shop
             </Badge>
-            <h1 className="mt-6 text-4xl font-bold tracking-tight text-balance sm:text-5xl lg:text-[3.5rem] lg:leading-[1.1]">
+            <h1 className="mt-6 text-4xl font-bold tracking-tight text-balance sm:text-5xl lg:text-[3.75rem] lg:leading-[1.08]">
               Buy ready-to-use products built to <span className="text-primary">solve real problems</span>.
             </h1>
             <p className="mt-6 max-w-2xl text-base leading-7 text-muted sm:text-lg">
               Browse our digital products, add to cart, and get secure access after payment. Need something else? Explore our portfolio or request a custom service.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Link href="#products" className="inline-flex h-12 items-center justify-center rounded-xl bg-primary px-6 text-sm font-semibold text-white shadow-sm shadow-primary/25 transition hover:opacity-90">
+              <Link href="#products" className="btn-sheen inline-flex h-12 items-center justify-center rounded-xl bg-primary px-6 text-sm font-semibold text-white shadow-lg shadow-primary/30 transition duration-300 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-primary/30">
                 Shop Products
               </Link>
-              <Link href="/projects" className="inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-border bg-surface px-6 text-sm font-semibold text-text transition hover:bg-slate-50 dark:hover:bg-slate-800">
+              <Link href="/projects" className="inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-border bg-surface/80 px-6 text-sm font-semibold text-text backdrop-blur-sm transition duration-300 hover:-translate-y-0.5 hover:bg-surface">
                 <Code2 className="h-4 w-4" /> Portfolio
               </Link>
-              <Link href="/services" className="inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-border bg-surface px-6 text-sm font-semibold text-text transition hover:bg-slate-50 dark:hover:bg-slate-800">
+              <Link href="/services" className="inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-border bg-surface/80 px-6 text-sm font-semibold text-text backdrop-blur-sm transition duration-300 hover:-translate-y-0.5 hover:bg-surface">
                 <Wrench className="h-4 w-4" /> Services
               </Link>
             </div>
-            <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted">
-              <span className="inline-flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-primary" />Secure payment</span>
-              <span className="inline-flex items-center gap-2"><Zap className="h-4 w-4 text-primary" />Instant access after payment</span>
-              <span className="inline-flex items-center gap-2"><ShoppingBag className="h-4 w-4 text-primary" />No account required</span>
+            <div className="mt-8 flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted">
+              <span className="inline-flex items-center gap-2 rounded-full bg-surface/60 px-3 py-1.5 backdrop-blur-sm"><ShieldCheck className="h-4 w-4 text-primary" />Secure payment</span>
+              <span className="inline-flex items-center gap-2 rounded-full bg-surface/60 px-3 py-1.5 backdrop-blur-sm"><Zap className="h-4 w-4 text-primary" />Instant access after payment</span>
+              <span className="inline-flex items-center gap-2 rounded-full bg-surface/60 px-3 py-1.5 backdrop-blur-sm"><ShoppingBag className="h-4 w-4 text-primary" />No account required</span>
             </div>
           </div>
         </Container>
       </section>
 
-      <section id="products" className="py-16 sm:py-20">
-        <Container>
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <section id="products" className="py-16 sm:py-20 relative">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,_rgba(59,130,246,0.06),_transparent_60%)] dark:bg-[radial-gradient(ellipse_at_bottom,_rgba(59,130,246,0.1),_transparent_60%)]" />
+        <Container className="relative">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between" data-reveal>
             <div>
               <p className="text-sm font-semibold uppercase tracking-wider text-primary">Products</p>
               <h2 className="mt-2 text-3xl font-bold tracking-tight">Products for Sale</h2>
               <p className="mt-2 text-muted">Choose a product, checkout securely, and download after confirmed payment.</p>
             </div>
-            <Link href="/products" className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
-              View all products <ArrowRight className="h-4 w-4" />
+            <Link href="/products" className="group inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
+              View all products <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Link>
           </div>
 
           <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {products.map((product) => (
-              <article key={product.id} className="group flex flex-col rounded-2xl border border-border bg-surface p-5 transition duration-200 hover:-translate-y-0.5 hover:border-primary/20 hover:shadow-lg hover:shadow-slate-200/50 dark:hover:shadow-none">
+            {products.map((product, i) => (
+              <article key={product.id} data-reveal style={{ "--reveal-delay": `${i * 80}ms` } as any} className="group hover-lift flex flex-col rounded-2xl border border-border bg-surface p-5 hover:border-primary/20 dark:hover:shadow-none">
                 {product.imageUrl ? (
                   <Image src={product.imageUrl} alt={product.name} width={800} height={500} className="mb-4 h-44 w-full rounded-xl object-cover" />
                 ) : (

@@ -21,11 +21,13 @@ export default function CartPage() {
   return (
     <main className="py-14 sm:py-16">
       <Container>
-        <p className="text-sm font-semibold uppercase tracking-wider text-primary">Cart</p>
-        <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">Your Cart</h1>
-        <p className="mt-2 text-muted">Guest checkout — no account required.</p>
+        <div data-reveal>
+          <p className="text-sm font-semibold uppercase tracking-wider text-primary">Cart</p>
+          <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">Your Cart</h1>
+          <p className="mt-2 text-muted">Guest checkout — no account required.</p>
+        </div>
         {items.length === 0 ? (
-          <div className="mt-10 rounded-2xl border border-dashed border-border bg-surface p-12 text-center">
+          <div data-reveal className="mt-10 rounded-2xl border border-dashed border-border bg-surface p-12 text-center">
             <div className="mx-auto inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
               <ShoppingBag className="h-7 w-7" />
             </div>
@@ -38,8 +40,8 @@ export default function CartPage() {
         ) : (
           <div className="mt-10 grid gap-8 lg:grid-cols-[1fr_340px]">
             <div className="space-y-4">
-              {items.map((item) => (
-                <div key={item.productId} className="flex flex-col gap-4 rounded-2xl border border-border bg-surface p-4 sm:flex-row sm:items-center">
+              {items.map((item, i) => (
+                <div key={item.productId} data-reveal style={{ "--reveal-delay": `${i * 60}ms` } as any} className="hover-lift flex flex-col gap-4 rounded-2xl border border-border bg-surface p-4 sm:flex-row sm:items-center">
                   {item.imageUrl ? <Image src={item.imageUrl} alt={item.name} width={96} height={96} className="h-24 w-24 rounded-xl object-cover" /> : <div className="flex h-24 w-24 items-center justify-center rounded-xl bg-primary/10 text-primary"><ShoppingBag className="h-6 w-6" /></div>}
                   <div className="flex-1">
                     <div className="flex items-start justify-between gap-4">
@@ -57,7 +59,7 @@ export default function CartPage() {
                 </div>
               ))}
             </div>
-            <div className="h-fit rounded-2xl border border-border bg-surface p-6">
+            <div data-reveal className="h-fit rounded-2xl border border-border bg-surface p-6">
               <h2 className="font-semibold text-lg">Order Summary</h2>
               <div className="mt-5 space-y-3 text-sm">
                 <div className="flex items-center justify-between">

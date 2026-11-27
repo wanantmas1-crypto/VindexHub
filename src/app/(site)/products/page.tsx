@@ -22,19 +22,21 @@ export default async function ProductsPage({ searchParams }: PageProps<"/product
   return (
     <main className="py-14 sm:py-16">
       <Container>
-        <p className="text-sm font-semibold uppercase tracking-wider text-primary">Shop</p>
-        <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">Products That Work for You</h1>
-        <p className="mt-3 max-w-2xl leading-7 text-muted">Choose from practical, ready-to-use products built by our team. Purchase securely, get instant access, and start solving problems today.</p>
-        <div className="mt-5 flex flex-wrap gap-3 text-sm text-muted">
-          {["Built by Vindex", "Instant access", "Secure checkout", "Promo codes supported"].map((item) => (
-            <span key={item} className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1.5">
-              <CheckCircle2 className="h-4 w-4 text-primary" />
-              {item}
-            </span>
-          ))}
+        <div data-reveal>
+          <p className="text-sm font-semibold uppercase tracking-wider text-primary">Shop</p>
+          <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">Products That Work for You</h1>
+          <p className="mt-3 max-w-2xl leading-7 text-muted">Choose from practical, ready-to-use products built by our team. Purchase securely, get instant access, and start solving problems today.</p>
+          <div className="mt-5 flex flex-wrap gap-3 text-sm text-muted">
+            {["Built by Vindex", "Instant access", "Secure checkout", "Promo codes supported"].map((item) => (
+              <span key={item} className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1.5">
+                <CheckCircle2 className="h-4 w-4 text-primary" />
+                {item}
+              </span>
+            ))}
+          </div>
         </div>
 
-        <form className="mt-8 grid gap-3 sm:grid-cols-[1fr_180px_auto]" action="/products">
+        <form data-reveal className="mt-8 grid gap-3 sm:grid-cols-[1fr_180px_auto]" action="/products">
           {selectedCategory && <input type="hidden" name="category" value={selectedCategory} />}
           <div className="relative">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
@@ -46,10 +48,10 @@ export default async function ProductsPage({ searchParams }: PageProps<"/product
             <option value="price-desc">Price: High to Low</option>
             <option value="name">Name</option>
           </select>
-          <button className="h-11 rounded-xl bg-primary px-5 text-sm font-semibold text-white shadow-sm shadow-primary/25 transition hover:opacity-90">Search</button>
+          <button className="btn-sheen h-11 rounded-xl bg-primary px-5 text-sm font-semibold text-white shadow-sm shadow-primary/25 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md active:scale-[0.98]">Search</button>
         </form>
 
-        <div className="mt-4 flex flex-wrap gap-2">
+        <div data-reveal className="mt-4 flex flex-wrap gap-2">
           <Link href={`/products${query || selectedSort ? `?${new URLSearchParams({ ...(query ? { q: query } : {}), ...(selectedSort ? { sort: selectedSort } : {}) }).toString()}` : ""}`} className={`rounded-full px-4 py-2 text-sm font-medium border transition ${!selectedCategory ? "bg-primary text-white border-primary" : "bg-surface text-muted border-border hover:text-text hover:border-primary/30"}`}>All</Link>
           {categories.map((c) => {
             const params = new URLSearchParams({ category: c.slug, ...(query ? { q: query } : {}), ...(selectedSort ? { sort: selectedSort } : {}) });
@@ -62,8 +64,8 @@ export default async function ProductsPage({ searchParams }: PageProps<"/product
         </div>
 
         <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {products.map((product) => (
-            <article key={product.id} className="group flex flex-col rounded-2xl border border-border bg-surface p-5 transition duration-200 hover:-translate-y-0.5 hover:border-primary/20 hover:shadow-lg hover:shadow-slate-200/50 dark:hover:shadow-none">
+          {products.map((product, i) => (
+            <article key={product.id} data-reveal style={{ "--reveal-delay": `${i * 70}ms` } as any} className="group hover-lift flex flex-col rounded-2xl border border-border bg-surface p-5 hover:border-primary/20 dark:hover:shadow-none">
               {product.imageUrl ? (
                 <Image src={product.imageUrl} alt={product.name} width={800} height={500} className="mb-4 h-44 w-full rounded-xl object-cover" />
               ) : (

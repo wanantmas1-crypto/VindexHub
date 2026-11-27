@@ -12,12 +12,14 @@ export default async function ProjectsPage() {
   return (
     <main className="py-14 sm:py-16">
       <Container>
-        <p className="text-sm font-semibold uppercase tracking-wider text-primary">Portfolio</p>
-        <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">Projects</h1>
-        <p className="mt-3 max-w-2xl leading-7 text-muted">A showcase of work we’ve designed, built, and delivered.</p>
+        <div data-reveal>
+          <p className="text-sm font-semibold uppercase tracking-wider text-primary">Portfolio</p>
+          <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">Projects</h1>
+          <p className="mt-3 max-w-2xl leading-7 text-muted">A showcase of work we’ve designed, built, and delivered.</p>
+        </div>
         <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {projects.map((project) => (
-            <article key={project.id} className="group overflow-hidden rounded-2xl border border-border bg-surface transition duration-200 hover:-translate-y-0.5 hover:border-primary/20 hover:shadow-lg hover:shadow-slate-200/50 dark:hover:shadow-none">
+          {projects.map((project, i) => (
+            <article key={project.id} data-reveal style={{ "--reveal-delay": `${i * 80}ms` } as any} className="group hover-lift overflow-hidden rounded-2xl border border-border bg-surface hover:border-primary/20 dark:hover:shadow-none">
               {project.imageUrl ? (
                 <Image src={project.imageUrl} alt={project.title} width={1200} height={700} className="h-48 w-full object-cover transition duration-300 group-hover:scale-[1.02]" />
               ) : (

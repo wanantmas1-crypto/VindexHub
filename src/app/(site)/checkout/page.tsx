@@ -31,9 +31,11 @@ function CheckoutContent() {
     <main className="py-14 sm:py-16">
       <Container className="grid gap-8 lg:grid-cols-[1fr_360px]">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-wider text-primary">Checkout</p>
-          <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">Secure Checkout</h1>
-          <p className="mt-3 max-w-2xl leading-7 text-muted">Pay securely with Paystack (M-Pesa, card, or bank, depending on availability). You’ll get download access only after payment is confirmed.</p>
+          <div data-reveal>
+            <p className="text-sm font-semibold uppercase tracking-wider text-primary">Checkout</p>
+            <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">Secure Checkout</h1>
+            <p className="mt-3 max-w-2xl leading-7 text-muted">Pay securely with Paystack (M-Pesa, card, or bank, depending on availability). You’ll get download access only after payment is confirmed.</p>
+          </div>
 
           {items.length === 0 ? (
             <div className="mt-8 rounded-2xl border border-dashed border-border bg-surface p-8">
@@ -41,7 +43,7 @@ function CheckoutContent() {
               <Link href="/products" className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">Browse products <ArrowRight className="h-4 w-4" /></Link>
             </div>
           ) : (
-            <form action={action} className="mt-8 rounded-2xl border border-border bg-surface p-6 space-y-5">
+            <form action={action} data-reveal className="mt-8 rounded-2xl border border-border bg-surface p-6 space-y-5">
               <input type="hidden" name="items" value={JSON.stringify(items.map((i) => ({ productId: i.productId, quantity: i.quantity })))} />
               <input type="hidden" name="paymentMethod" value="paystack" />
               <div>
@@ -62,7 +64,7 @@ function CheckoutContent() {
             </form>
           )}
         </div>
-        <div className="h-fit rounded-2xl border border-border bg-surface p-6">
+        <div data-reveal className="h-fit rounded-2xl border border-border bg-surface p-6">
           <h2 className="font-semibold text-lg">Summary</h2>
           <div className="mt-5 space-y-3">
             {items.map((item) => (

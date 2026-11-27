@@ -3,6 +3,7 @@ import Image from "next/image";
 import { Container } from "./container";
 import { CartButton } from "./cart-button";
 import { ThemeToggle } from "./theme-toggle";
+import { SoundToggle } from "./sound-toggle";
 import { getSiteSettings } from "@/lib/data";
 
 const nav = [
@@ -30,6 +31,7 @@ export async function SiteHeader() {
           ))}
         </nav>
         <div className="flex items-center gap-2 sm:gap-3">
+          <SoundToggle />
           <ThemeToggle />
           <CartButton />
         </div>
