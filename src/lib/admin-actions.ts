@@ -242,6 +242,43 @@ export async function saveReviewScreenshot(_: AdminActionState, formData: FormDa
   return { ok: true, message: "Review screenshot uploaded." };
 }
 
+export async function createAdminReview(_: AdminActionState, formData: FormData): Promise<AdminActionState> {
+  await requireAdminSession();
+  const authorName = String(formData.get("authorName") || "").trim();
+  const authorEmail = String(formData.get("authorEmail") || "").trim() || "admin@vindexhub.local";
+  const rating = Number(formData.get("rating"));
+  const comment = String(formData.get("comment") || "").trim();
+  const source = String(formData.get("source") || "web").trim();
+  const status = String(formData.get("status") || "approved").trim();
+  const verifiedBuyer = formData.get("verifiedBuyer") === "on";
+  const productIdRaw = String(formData.get("productId") || "").trim();
+  const serviceIdRaw = String(formData.get("serviceId") || "").trim();
+  const productId = productIdRaw ? Number(productIdRaw) : null;
+  const serviceId = serviceIdRaw ? Number(serviceIdRaw) : null;
+
+  if (!authorName || !comment) return { ok: false, message: "Name and comment are required." };
+  if (!Number.isFinite(rating) || rating < 1 || rating > 5) return { ok: false, message: "Rating must be 1-5." };
+  if (!REVIEW_SOURCES.includes(source as any)) return { ok: false, message: "Invalid source." };
+  if (!["pending", "approved", "rejected"].includes(status)) return { ok: false, message: "Invalid status." };
+
+  await db.insert(reviews).values({
+    productId: Number.isFinite(productId as any) ? productId : null,
+    serviceId: Number.isFinite(serviceId as any) ? serviceId : null,
+    authorName,
+    authorEmail,
+    rating,
+    comment,
+    source,
+    status,
+    verifiedBuyer,
+  } as any);
+
+  revalidatePath("/reviews");
+  revalidatePath("/products");
+  revalidatePath("/admin/reviews");
+  return { ok: true, message: "Testimonial added." };
+}
+
 export async function setServiceRequestStatus(formData: FormData) {
   await requireAdminSession();
   const id = Number(formData.get("id"));

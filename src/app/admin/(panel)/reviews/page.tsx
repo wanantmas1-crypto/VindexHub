@@ -4,13 +4,17 @@ import { setReviewStatus, setReviewSource } from "@/lib/admin-actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ReviewScreenshotForm } from "./review-screenshot-form";
+import { CreateReviewForm } from "./create-review-form";
 
 export default async function AdminReviewsPage() {
   const reviews = await getAllReviews();
   return (
     <main>
       <h1 className="text-2xl font-bold tracking-tight">Reviews Moderation</h1>
-      <p className="mt-1 text-muted">Approve, reject, or keep reviews pending before they appear publicly. You can also attach a screenshot.</p>
+      <p className="mt-1 text-muted">Approve, reject, or keep reviews pending before they appear publicly. You can also attach a screenshot or add testimonials manually from WhatsApp, Instagram, X, Telegram, or web.</p>
+      <div className="mt-6">
+        <CreateReviewForm />
+      </div>
       <div className="mt-6 space-y-4">
         {reviews.map((review) => (
           <div key={review.id} className="rounded-xl border border-border bg-surface p-5">
