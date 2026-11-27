@@ -37,14 +37,24 @@ export function mpesaTimestamp() {
   return `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
 }
 
+async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs = 15000) {
+  const controller = new AbortController();
+  const t = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(t);
+  }
+}
+
 export async function getMpesaAccessToken(): Promise<string> {
   const key = process.env.MPESA_CONSUMER_KEY!;
   const secret = process.env.MPESA_CONSUMER_SECRET!;
   const auth = Buffer.from(`${key}:${secret}`).toString("base64");
-  const res = await fetch(`${baseUrl()}/oauth/v1/generate?grant_type=client_credentials`, {
+  const res = await fetchWithTimeout(`${baseUrl()}/oauth/v1/generate?grant_type=client_credentials`, {
     headers: { Authorization: `Basic ${auth}` },
     cache: "no-store",
-  });
+  }, 15000);
   if (!res.ok) {
     const text = await res.text().catch(() => "");
     throw new Error(`M-Pesa auth failed: ${res.status} ${text}`);
@@ -81,7 +91,7 @@ export async function initiateStkPush(input: StkPushInput): Promise<StkPushResul
     (process.env.MPESA_TRANSACTION_TYPE ?? "CustomerPayBillOnline").trim() || "CustomerPayBillOnline";
   const partyB = (process.env.MPESA_PARTYB ?? shortcode).trim() || shortcode;
 
-  const res = await fetch(`${baseUrl()}/mpesa/stkpush/v1/processrequest`, {
+  const res = await fetchWithTimeout(`${baseUrl()}/mpesa/stkpush/v1/processrequest`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -101,7 +111,7 @@ export async function initiateStkPush(input: StkPushInput): Promise<StkPushResul
       TransactionDesc: input.transactionDesc.slice(0, 13),
     }),
     cache: "no-store",
-  });
+  }, 15000);
 
   const data = (await res.json().catch(() => ({}))) as any;
   if (!res.ok || data.ResponseCode !== "0") {

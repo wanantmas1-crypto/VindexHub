@@ -33,11 +33,12 @@ export async function POST(request: Request) {
       await db.update(orders).set({ paymentFailureReason: null }).where(eq(orders.id, order.id));
     } else {
       // Known terminal failures. Unknown/non-terminal codes (e.g. 4999 "still processing") must not be marked failed.
-      const terminalFailures = new Set([1, 1032, 1037, 2001, 1001, 1019, 1025, 9999]);
+      const terminalFailures = new Set([1, 1032, 1037, 2001, 1001, 1019, 1025, 2029, 9999]);
       const reason = `${parsed.resultCode}: ${parsed.resultDesc}`.slice(0, 255);
       const descLower = (parsed.resultDesc || "").toLowerCase();
       const terminal4999 = parsed.resultCode === 4999 && /wrong credential|invalid credential|authentication/.test(descLower);
-      if (terminalFailures.has(parsed.resultCode) || terminal4999) {
+      const looksTerminal = /fail|cancel|declin|expir|invalid|wrong|insufficient|timeout|unreachable|reject/.test(descLower);
+      if (terminalFailures.has(parsed.resultCode) || terminal4999 || looksTerminal) {
         if (order.status === "pending") {
           await db.update(orders).set({ status: "failed", paymentFailureReason: reason }).where(eq(orders.id, order.id));
         }
