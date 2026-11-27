@@ -6,7 +6,7 @@ import { Container } from "@/components/container";
 import { Badge } from "@/components/ui/badge";
 import { AddToCartButton } from "@/components/add-to-cart-button";
 import { getProductBySlug, getApprovedReviewsForProduct } from "@/lib/data";
-import { formatPrice, parseJsonArray } from "@/lib/utils";
+import { formatPrice, parseJsonArray, effectivePriceCents } from "@/lib/utils";
 import { ReviewForm } from "@/components/review-form";
 import { Star, ShieldCheck, Download, KeyRound, CheckCircle2, Package } from "lucide-react";
 
@@ -52,7 +52,15 @@ export default async function ProductDetailPage({ params }: PageProps<"/products
               <Badge variant="muted">{product.licenseType}</Badge>
             </div>
             <h1 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">{product.name}</h1>
-            <p className="mt-3 text-3xl font-bold text-primary">{formatPrice(product.priceCents, product.currency)}</p>
+            <div className="mt-3 flex items-baseline gap-3">
+              <p className="text-3xl font-bold text-primary">{formatPrice(effectivePriceCents(product.priceCents, product.offerPriceCents), product.currency)}</p>
+              {product.offerPriceCents != null && product.offerPriceCents < product.priceCents && (
+                <p className="text-lg text-muted line-through">{formatPrice(product.priceCents, product.currency)}</p>
+              )}
+            </div>
+            {product.offerPriceCents != null && product.offerPriceCents < product.priceCents && (
+              <p className="mt-1 text-sm font-medium text-success">Limited offer</p>
+            )}
             <p className="mt-5 leading-7 text-muted">{product.description}</p>
             <div className="mt-4 text-sm text-muted">Version {product.version} • Ready for immediate use</div>
             {features.length > 0 && (
@@ -69,7 +77,7 @@ export default async function ProductDetailPage({ params }: PageProps<"/products
               </div>
             )}
             <div className="mt-8 rounded-2xl border border-border bg-slate-50 p-5 dark:bg-slate-900/40">
-              <AddToCartButton product={{ productId: product.id, slug: product.slug, name: product.name, priceCents: product.priceCents, currency: product.currency, imageUrl: product.imageUrl }} />
+              <AddToCartButton product={{ productId: product.id, slug: product.slug, name: product.name, priceCents: effectivePriceCents(product.priceCents, product.offerPriceCents), currency: product.currency, imageUrl: product.imageUrl }} />
               <div className="mt-5 grid gap-3 text-sm text-muted sm:grid-cols-3">
                 <div className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-primary" /> Secure checkout</div>
                 <div className="flex items-center gap-2"><Download className="h-4 w-4 text-primary" /> Instant download</div>

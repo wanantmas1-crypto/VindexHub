@@ -69,7 +69,7 @@ function CheckoutContent() {
 
   if (!mounted) return <main className="py-14 sm:py-16"><Container><p className="text-muted">Loading...</p></Container></main>;
   const total = cartTotal(items);
-  const currency = items[0]?.currency ?? "USD";
+  const currency = items[0]?.currency ?? "KES";
   const awaitingPayment = state.ok && state.paymentPending;
 
   return (

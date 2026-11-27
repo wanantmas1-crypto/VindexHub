@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
-import { categories, projects, products, services, reviews, orders, orderItems, serviceRequests, siteSettings } from "./schema";
+import { categories, projects, products, services, reviews, orders, orderItems, serviceRequests, siteSettings, receipts } from "./schema";
 
 const url =
   process.env.TURSO_DATABASE_URL ??
@@ -54,7 +54,8 @@ async function main() {
       changelog TEXT,
       faqs TEXT NOT NULL DEFAULT '[]',
       price_cents INTEGER NOT NULL,
-      currency TEXT NOT NULL DEFAULT 'USD',
+      offer_price_cents INTEGER,
+      currency TEXT NOT NULL DEFAULT 'KES',
       image_url TEXT,
       file_url TEXT,
       download_url TEXT,
@@ -70,7 +71,7 @@ async function main() {
       description TEXT NOT NULL,
       deliverables TEXT NOT NULL DEFAULT '[]',
       starting_price_cents INTEGER NOT NULL,
-      currency TEXT NOT NULL DEFAULT 'USD',
+      currency TEXT NOT NULL DEFAULT 'KES',
       active INTEGER NOT NULL DEFAULT 1,
       created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
@@ -89,13 +90,20 @@ async function main() {
     CREATE TABLE IF NOT EXISTS orders (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       email TEXT NOT NULL,
+      phone TEXT,
       total_cents INTEGER NOT NULL,
-      currency TEXT NOT NULL DEFAULT 'USD',
+      currency TEXT NOT NULL DEFAULT 'KES',
       status TEXT NOT NULL DEFAULT 'pending',
+      payment_method TEXT NOT NULL DEFAULT 'stripe',
       stripe_session_id TEXT,
       stripe_payment_intent_id TEXT,
+      mpesa_checkout_request_id TEXT,
+      mpesa_merchant_request_id TEXT,
+      mpesa_receipt_number TEXT,
+      receipt_number TEXT,
       download_token TEXT,
       download_expires_at TEXT,
+      paid_at TEXT,
       created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
     CREATE TABLE IF NOT EXISTS order_items (
@@ -108,6 +116,21 @@ async function main() {
       download_url TEXT,
       license_key TEXT,
       download_count INTEGER NOT NULL DEFAULT 0
+    );
+    CREATE TABLE IF NOT EXISTS receipts (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      order_id INTEGER NOT NULL REFERENCES orders(id),
+      receipt_number TEXT NOT NULL UNIQUE,
+      email TEXT NOT NULL,
+      phone TEXT,
+      payment_method TEXT NOT NULL,
+      payment_reference TEXT,
+      currency TEXT NOT NULL DEFAULT 'KES',
+      subtotal_cents INTEGER NOT NULL,
+      total_cents INTEGER NOT NULL,
+      status TEXT NOT NULL DEFAULT 'issued',
+      issued_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      payload TEXT NOT NULL DEFAULT '{}'
     );
     CREATE TABLE IF NOT EXISTS reviews (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -125,6 +148,7 @@ async function main() {
 
   await db.delete(reviews).run();
   await db.delete(orderItems).run();
+  await db.delete(receipts).run();
   await db.delete(orders).run();
   await db.delete(serviceRequests).run();
   await db.delete(services).run();
@@ -188,8 +212,9 @@ async function main() {
       systemRequirements: "Windows 10+/macOS 12+/Linux, 4GB RAM, 500MB disk space, modern browser for web dashboard.",
       changelog: "v1.2.0 - Improved pipeline view, faster exports, bug fixes.",
       faqs: JSON.stringify([{ q: "Is this a one-time purchase?", a: "Yes, you get a lifetime license for v1.x updates." }, { q: "Do I get a license key?", a: "Yes, a license key is generated after purchase." }]),
-      priceCents: 7900,
-      currency: "USD",
+      priceCents: 790000,
+      offerPriceCents: 690000,
+      currency: "KES",
       imageUrl: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1200&q=80",
       downloadUrl: "https://example.com/downloads/vindex-crm-pro.zip",
       licenseType: "Single-user commercial license",
@@ -206,8 +231,8 @@ async function main() {
       systemRequirements: "Node.js 18+, Git, CI environment (optional).",
       changelog: "v2.0.1 - New CI templates, improved audit log, security fixes.",
       faqs: JSON.stringify([{ q: "Does it work with GitHub Actions?", a: "Yes, CI templates are included." }]),
-      priceCents: 4900,
-      currency: "USD",
+      priceCents: 490000,
+      currency: "KES",
       imageUrl: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80",
       downloadUrl: "https://example.com/downloads/deploy-guard.zip",
       licenseType: "Team license (up to 5 seats)",
@@ -224,8 +249,8 @@ async function main() {
       systemRequirements: "Modern browser, internet connection for cloud sync (optional).",
       changelog: "v1.0.4 - PDF export improvements and minor fixes.",
       faqs: JSON.stringify([{ q: "Can I export PDFs?", a: "Yes, branded PDF export is included." }]),
-      priceCents: 3900,
-      currency: "USD",
+      priceCents: 390000,
+      currency: "KES",
       imageUrl: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=1200&q=80",
       downloadUrl: "https://example.com/downloads/invoice-sprint.zip",
       licenseType: "Single-user commercial license",
@@ -240,8 +265,8 @@ async function main() {
       name: "Custom Software Development",
       description: "End-to-end development for web apps, internal tools, and MVPs tailored to your business needs.",
       deliverables: JSON.stringify(["Technical planning", "UI implementation", "Backend/API development", "Deployment support"]),
-      startingPriceCents: 150000,
-      currency: "USD",
+      startingPriceCents: 1500000,
+      currency: "KES",
       active: true,
     },
     {
@@ -249,8 +274,8 @@ async function main() {
       name: "API & Payment Integration",
       description: "Integrate third-party APIs, payment gateways, and automation workflows securely into your product.",
       deliverables: JSON.stringify(["Integration architecture", "Secure implementation", "Webhook handling", "Testing and documentation"]),
-      startingPriceCents: 80000,
-      currency: "USD",
+      startingPriceCents: 800000,
+      currency: "KES",
       active: true,
     },
     {
@@ -258,8 +283,8 @@ async function main() {
       name: "Maintenance & Support",
       description: "Ongoing support, bug fixes, performance improvements, and feature updates for existing software.",
       deliverables: JSON.stringify(["Bug fixes", "Performance tuning", "Security updates", "Monthly support report"]),
-      startingPriceCents: 50000,
-      currency: "USD",
+      startingPriceCents: 500000,
+      currency: "KES",
       active: true,
     },
   ]).run();

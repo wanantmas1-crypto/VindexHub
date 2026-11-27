@@ -16,6 +16,7 @@ type ProductRow = {
   description: string;
   features: string;
   priceCents: number;
+  offerPriceCents: number | null;
   currency: string;
   imageUrl: string | null;
   fileUrl: string | null;
@@ -53,10 +54,12 @@ export function ProductsManager({ initialProducts, categories }: { initialProduc
           </select>
           <Textarea name="description" placeholder="Description" defaultValue={editing?.description} required rows={4} />
           <Textarea name="features" placeholder="Features (one per line)" defaultValue={editing ? parseJsonArray<string>(editing.features).join("\n") : ""} rows={4} />
-          <div className="grid gap-3 sm:grid-cols-2">
-            <Input name="priceCents" type="number" min={0} placeholder="Price cents" defaultValue={editing?.priceCents} required />
-            <Input name="currency" placeholder="USD" defaultValue={editing?.currency ?? "USD"} required />
+          <div className="grid gap-3 sm:grid-cols-3">
+            <Input name="priceCents" type="number" min={0} placeholder="Price (cents)" defaultValue={editing?.priceCents} required />
+            <Input name="offerPriceCents" type="number" min={0} placeholder="Offer price (cents)" defaultValue={editing?.offerPriceCents ?? ""} />
+            <Input name="currency" placeholder="KES" defaultValue={editing?.currency ?? "KES"} required />
           </div>
+          <p className="text-xs text-muted -mt-1">Offer price is optional. If set lower than price, it becomes the active sale price.</p>
           <Input name="imageUrl" placeholder="Image URL" defaultValue={editing?.imageUrl ?? ""} />
           <Input name="downloadUrl" placeholder="Download URL / file path" defaultValue={editing?.downloadUrl ?? ""} />
           <Input name="licenseType" placeholder="License type" defaultValue={editing?.licenseType ?? "Standard License"} />
@@ -73,7 +76,14 @@ export function ProductsManager({ initialProducts, categories }: { initialProduc
             <div key={product.id} className="rounded-xl border border-border bg-surface p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <div className="font-medium">{product.name} {!product.active && <span className="text-xs text-muted">(inactive)</span>}</div>
-                <div className="text-sm text-muted">{formatPrice(product.priceCents, product.currency)} • {product.slug}{product.categoryName ? ` • ${product.categoryName}` : ""}</div>
+                <div className="text-sm text-muted">
+                  {product.offerPriceCents != null && product.offerPriceCents < product.priceCents ? (
+                    <><span className="font-medium text-primary">{formatPrice(product.offerPriceCents, product.currency)}</span> <span className="line-through">{formatPrice(product.priceCents, product.currency)}</span></>
+                  ) : (
+                    formatPrice(product.priceCents, product.currency)
+                  )}{" "}
+                  • {product.slug}{product.categoryName ? ` • ${product.categoryName}` : ""}
+                </div>
               </div>
               <div className="flex gap-2">
                 <Button variant="secondary" size="sm" onClick={() => setEditing(product)}>Edit</Button>

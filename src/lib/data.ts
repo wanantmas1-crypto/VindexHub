@@ -66,7 +66,7 @@ export async function getActiveProducts(opts?: string | { categorySlug?: string;
         id: products.id, categoryId: products.categoryId, slug: products.slug, name: products.name,
         description: products.description, features: products.features, screenshots: products.screenshots,
         systemRequirements: products.systemRequirements, changelog: products.changelog, faqs: products.faqs,
-        priceCents: products.priceCents, currency: products.currency, imageUrl: products.imageUrl,
+        priceCents: products.priceCents, offerPriceCents: products.offerPriceCents, currency: products.currency, imageUrl: products.imageUrl,
         fileUrl: products.fileUrl, downloadUrl: products.downloadUrl, licenseType: products.licenseType,
         version: products.version, active: products.active, createdAt: products.createdAt,
         categoryName: categories.name, categorySlug: categories.slug,
@@ -79,8 +79,9 @@ export async function getActiveProducts(opts?: string | { categorySlug?: string;
     let filtered = rows;
     if (categorySlug) filtered = filtered.filter((p) => p.categorySlug === categorySlug);
     if (q) filtered = filtered.filter((p) => [p.name, p.description, p.categoryName ?? ""].join(" ").toLowerCase().includes(q));
-    if (sort === "price-asc") filtered = [...filtered].sort((a, b) => a.priceCents - b.priceCents);
-    if (sort === "price-desc") filtered = [...filtered].sort((a, b) => b.priceCents - a.priceCents);
+    const eff = (p: any) => (p.offerPriceCents != null && p.offerPriceCents < p.priceCents ? p.offerPriceCents : p.priceCents);
+    if (sort === "price-asc") filtered = [...filtered].sort((a, b) => eff(a) - eff(b));
+    if (sort === "price-desc") filtered = [...filtered].sort((a, b) => eff(b) - eff(a));
     if (sort === "name") filtered = [...filtered].sort((a, b) => a.name.localeCompare(b.name));
     return filtered;
   } catch (e) { logDbError("getActiveProducts", e); return []; }
@@ -93,7 +94,7 @@ export async function getProductBySlug(slug: string) {
         id: products.id, categoryId: products.categoryId, slug: products.slug, name: products.name,
         description: products.description, features: products.features, screenshots: products.screenshots,
         systemRequirements: products.systemRequirements, changelog: products.changelog, faqs: products.faqs,
-        priceCents: products.priceCents, currency: products.currency, imageUrl: products.imageUrl,
+        priceCents: products.priceCents, offerPriceCents: products.offerPriceCents, currency: products.currency, imageUrl: products.imageUrl,
         fileUrl: products.fileUrl, downloadUrl: products.downloadUrl, licenseType: products.licenseType,
         version: products.version, active: products.active, createdAt: products.createdAt,
         categoryName: categories.name, categorySlug: categories.slug,
@@ -168,7 +169,7 @@ export async function getAllProducts() {
       .select({
         id: products.id, categoryId: products.categoryId, slug: products.slug, name: products.name,
         description: products.description, features: products.features, priceCents: products.priceCents,
-        currency: products.currency, imageUrl: products.imageUrl, fileUrl: products.fileUrl,
+        offerPriceCents: products.offerPriceCents, currency: products.currency, imageUrl: products.imageUrl, fileUrl: products.fileUrl,
         downloadUrl: products.downloadUrl, licenseType: products.licenseType, version: products.version,
         active: products.active, createdAt: products.createdAt, categoryName: categories.name,
       })

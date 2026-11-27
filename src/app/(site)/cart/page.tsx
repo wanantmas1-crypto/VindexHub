@@ -16,7 +16,7 @@ export default function CartPage() {
   if (!mounted) return <main className="py-14 sm:py-16"><Container><p className="text-muted">Loading cart...</p></Container></main>;
 
   const total = cartTotal(items);
-  const currency = items[0]?.currency ?? "USD";
+  const currency = items[0]?.currency ?? "KES";
 
   return (
     <main className="py-14 sm:py-16">

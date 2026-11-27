@@ -115,8 +115,10 @@ export async function createCheckout(_: ActionState, formData: FormData): Promis
       return { product, quantity: item.quantity };
     });
 
-    const totalCents = selected.reduce((sum, { product, quantity }) => sum + product.priceCents * quantity, 0);
-    const currency = selected[0]?.product.currency ?? "USD";
+    const getPrice = (p: typeof selected[number]["product"]) =>
+      p.offerPriceCents != null && p.offerPriceCents < p.priceCents ? p.offerPriceCents : p.priceCents;
+    const totalCents = selected.reduce((sum, { product, quantity }) => sum + getPrice(product) * quantity, 0);
+    const currency = selected[0]?.product.currency ?? "KES";
     const downloadToken = createDownloadToken();
     const stripe = getStripe();
     const mpesa = isMpesaConfigured();
@@ -129,7 +131,7 @@ export async function createCheckout(_: ActionState, formData: FormData): Promis
         return { ok: false, message: "Enter a valid M-Pesa phone number (e.g. 07XXXXXXXX or 2547XXXXXXXX).", errors: { phone: ["Valid M-Pesa phone number required"] } };
       }
       if (currency !== "KES") {
-        return { ok: false, message: "M-Pesa checkout currently supports KES pricing only. Please contact support." };
+        return { ok: false, message: "M-Pesa checkout currently supports KES pricing only. Please set product currency to KES in admin, or contact support." };
       }
 
       const [order] = await db
@@ -150,7 +152,7 @@ export async function createCheckout(_: ActionState, formData: FormData): Promis
           orderId: order.id,
           productId: product.id,
           productName: product.name,
-          unitPriceCents: product.priceCents,
+          unitPriceCents: getPrice(product),
           quantity,
           downloadUrl: product.downloadUrl,
         })),
@@ -205,7 +207,7 @@ export async function createCheckout(_: ActionState, formData: FormData): Promis
           orderId: order.id,
           productId: product.id,
           productName: product.name,
-          unitPriceCents: product.priceCents,
+          unitPriceCents: getPrice(product),
           quantity,
           downloadUrl: product.downloadUrl,
         })),
@@ -220,7 +222,7 @@ export async function createCheckout(_: ActionState, formData: FormData): Promis
           quantity,
           price_data: {
             currency: product.currency.toLowerCase(),
-            unit_amount: product.priceCents,
+            unit_amount: getPrice(product),
             product_data: {
               name: product.name,
               description: product.description.slice(0, 300),

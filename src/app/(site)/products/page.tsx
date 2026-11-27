@@ -5,7 +5,7 @@ import { CheckCircle2, Search, ShoppingBag } from "lucide-react";
 import { Container } from "@/components/container";
 import { AddToCartButton } from "@/components/add-to-cart-button";
 import { getActiveCategories, getActiveProducts } from "@/lib/data";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, effectivePriceCents } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Software" };
 
@@ -74,12 +74,17 @@ export default async function ProductsPage({ searchParams }: PageProps<"/product
                   {product.categoryName && <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-primary">{product.categoryName}</div>}
                   <h2 className="font-semibold text-lg leading-snug">{product.name}</h2>
                 </div>
-                <span className="shrink-0 rounded-full bg-primary/10 px-2.5 py-1 text-sm font-semibold text-primary">{formatPrice(product.priceCents, product.currency)}</span>
+                <div className="shrink-0 text-right">
+                  <span className="rounded-full bg-primary/10 px-2.5 py-1 text-sm font-semibold text-primary">{formatPrice(effectivePriceCents(product.priceCents, product.offerPriceCents), product.currency)}</span>
+                  {product.offerPriceCents != null && product.offerPriceCents < product.priceCents && (
+                    <div className="mt-1 text-xs text-muted line-through">{formatPrice(product.priceCents, product.currency)}</div>
+                  )}
+                </div>
               </div>
               <p className="mt-2 flex-1 text-sm leading-6 text-muted line-clamp-3">{product.description}</p>
               <p className="mt-3 text-xs text-muted">Version {product.version} • {product.licenseType}</p>
               <div className="mt-5 flex flex-col gap-2 sm:flex-row">
-                <AddToCartButton product={{ productId: product.id, slug: product.slug, name: product.name, priceCents: product.priceCents, currency: product.currency, imageUrl: product.imageUrl }} />
+                <AddToCartButton product={{ productId: product.id, slug: product.slug, name: product.name, priceCents: effectivePriceCents(product.priceCents, product.offerPriceCents), currency: product.currency, imageUrl: product.imageUrl }} />
                 <Link href={`/products/${product.slug}`} className="inline-flex h-11 w-full items-center justify-center rounded-xl border border-border px-4 text-sm font-medium text-text transition hover:bg-slate-50 dark:hover:bg-slate-800 sm:w-auto">Details</Link>
               </div>
             </article>

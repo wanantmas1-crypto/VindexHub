@@ -5,11 +5,18 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatPrice(priceCents: number, currency = "USD") {
-  return new Intl.NumberFormat("en-US", {
+export function formatPrice(priceCents: number, currency = "KES") {
+  const locale = currency === "KES" ? "en-KE" : "en-US";
+  return new Intl.NumberFormat(locale, {
     style: "currency",
     currency,
+    maximumFractionDigits: currency === "KES" ? 0 : 2,
   }).format(priceCents / 100);
+}
+
+export function effectivePriceCents(priceCents: number, offerPriceCents?: number | null) {
+  if (offerPriceCents != null && offerPriceCents >= 0 && offerPriceCents < priceCents) return offerPriceCents;
+  return priceCents;
 }
 
 export function slugify(value: string) {

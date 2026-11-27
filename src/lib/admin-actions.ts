@@ -48,6 +48,8 @@ export async function saveProduct(_: AdminActionState, formData: FormData): Prom
   const parsed = productSchema.safeParse(raw);
   if (!parsed.success) return { ok: false, message: parsed.error.issues[0]?.message ?? "Invalid product data." };
   const data = parsed.data;
+  const offerPriceCents =
+    data.offerPriceCents != null && data.offerPriceCents < data.priceCents ? data.offerPriceCents : null;
   const values = {
     categoryId: data.categoryId ? Number(data.categoryId) : null,
     name: data.name,
@@ -55,6 +57,7 @@ export async function saveProduct(_: AdminActionState, formData: FormData): Prom
     description: data.description,
     features: toJsonArray(data.features),
     priceCents: data.priceCents,
+    offerPriceCents,
     currency: data.currency.toUpperCase(),
     imageUrl: data.imageUrl || null,
     fileUrl: data.fileUrl || null,

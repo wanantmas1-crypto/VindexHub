@@ -4,7 +4,7 @@ import { ArrowRight, Code2, ShoppingBag, Wrench, Star, Sparkles, ShieldCheck, Za
 import { Container } from "@/components/container";
 import { Badge } from "@/components/ui/badge";
 import { getActiveProducts, getActiveServices, getApprovedReviews, getFeaturedProjects } from "@/lib/data";
-import { formatPrice, parseJsonArray } from "@/lib/utils";
+import { formatPrice, parseJsonArray, effectivePriceCents } from "@/lib/utils";
 import { AddToCartButton } from "@/components/add-to-cart-button";
 
 export default async function HomePage() {
@@ -82,7 +82,10 @@ export default async function HomePage() {
                   )}
                   <div className="min-w-0 flex-1">
                     <div className="font-semibold text-text">{product.name}</div>
-                    <div className="mt-0.5 text-sm text-muted">{formatPrice(product.priceCents, product.currency)}</div>
+                    <div className="mt-0.5 text-sm text-muted">
+                      {formatPrice(effectivePriceCents(product.priceCents, product.offerPriceCents), product.currency)}
+                      {product.offerPriceCents != null && product.offerPriceCents < product.priceCents && <span className="ml-1 line-through opacity-70">{formatPrice(product.priceCents, product.currency)}</span>}
+                    </div>
                   </div>
                   <Link href={`/products/${product.slug}`} className="inline-flex h-9 items-center rounded-lg border border-border px-3 text-sm font-medium text-text transition hover:bg-slate-50 dark:hover:bg-slate-800">View</Link>
                 </div>
@@ -146,11 +149,14 @@ export default async function HomePage() {
                 )}
                 <div className="flex items-start justify-between gap-3">
                   <h3 className="font-semibold text-lg leading-snug">{product.name}</h3>
-                  <span className="shrink-0 rounded-full bg-primary/10 px-2.5 py-1 text-sm font-semibold text-primary">{formatPrice(product.priceCents, product.currency)}</span>
+                  <div className="shrink-0 text-right">
+                    <span className="rounded-full bg-primary/10 px-2.5 py-1 text-sm font-semibold text-primary">{formatPrice(effectivePriceCents(product.priceCents, product.offerPriceCents), product.currency)}</span>
+                    {product.offerPriceCents != null && product.offerPriceCents < product.priceCents && <div className="mt-1 text-xs text-muted line-through">{formatPrice(product.priceCents, product.currency)}</div>}
+                  </div>
                 </div>
                 <p className="mt-2 flex-1 text-sm leading-6 text-muted line-clamp-3">{product.description}</p>
                 <div className="mt-5 flex flex-col gap-2 sm:flex-row">
-                  <AddToCartButton product={{ productId: product.id, slug: product.slug, name: product.name, priceCents: product.priceCents, currency: product.currency, imageUrl: product.imageUrl }} />
+                  <AddToCartButton product={{ productId: product.id, slug: product.slug, name: product.name, priceCents: effectivePriceCents(product.priceCents, product.offerPriceCents), currency: product.currency, imageUrl: product.imageUrl }} />
                   <Link href={`/products/${product.slug}`} className="inline-flex h-11 w-full items-center justify-center rounded-xl border border-border px-4 text-sm font-medium text-text transition hover:bg-slate-50 dark:hover:bg-slate-800 sm:w-auto">Details</Link>
                 </div>
               </article>
