@@ -4,7 +4,13 @@ const SANDBOX_BASE = "https://sandbox.safaricom.co.ke";
 const PROD_BASE = "https://api.safaricom.co.ke";
 
 function baseUrl() {
-  return process.env.MPESA_ENV === "production" ? PROD_BASE : SANDBOX_BASE;
+  const env = (process.env.MPESA_ENV ?? "sandbox").toLowerCase().trim();
+  return env === "production" || env === "prod" || env === "live" ? PROD_BASE : SANDBOX_BASE;
+}
+
+export function getMpesaEnv() {
+  const env = (process.env.MPESA_ENV ?? "sandbox").toLowerCase().trim();
+  return env === "production" || env === "prod" || env === "live" ? "production" : "sandbox";
 }
 
 export function isMpesaConfigured() {
