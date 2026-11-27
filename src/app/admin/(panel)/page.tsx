@@ -1,6 +1,9 @@
 import { getAdminStats } from "@/lib/data";
 import { formatPrice } from "@/lib/utils";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function AdminDashboardPage() {
   const stats = await getAdminStats();
   const cards = [

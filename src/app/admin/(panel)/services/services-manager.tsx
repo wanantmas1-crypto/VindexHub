@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { useRouter } from "next/navigation";
 import { saveService, deleteService, type AdminActionState } from "@/lib/admin-actions";
 import type { Service } from "@/lib/db/schema";
 import { Input } from "@/components/ui/input";
@@ -11,10 +12,12 @@ import { formatPrice, parseJsonArray } from "@/lib/utils";
 const initial: AdminActionState = { ok: false, message: "" };
 
 export function ServicesManager({ initialServices }: { initialServices: Service[] }) {
+  const router = useRouter();
   const [editing, setEditing] = useState<Service | null>(null);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
   const [state, action, pending] = useActionState(async (s: AdminActionState, fd: FormData) => {
     const res = await saveService(s, fd);
-    if (res.ok) setEditing(null);
+    if (res.ok) { setEditing(null); router.refresh(); }
     return res;
   }, initial);
 
@@ -50,7 +53,7 @@ export function ServicesManager({ initialServices }: { initialServices: Service[
               </div>
               <div className="flex gap-2">
                 <Button variant="secondary" size="sm" onClick={() => setEditing(service)}>Edit</Button>
-                <form action={deleteService}><input type="hidden" name="id" value={service.id} /><Button variant="danger" size="sm" type="submit">Delete</Button></form>
+                <form action={async (fd) => { setDeletingId(service.id); await deleteService(fd); setDeletingId(null); router.refresh(); }}><input type="hidden" name="id" value={service.id} /><Button variant="danger" size="sm" type="submit" disabled={deletingId === service.id}>{deletingId === service.id ? "Deleting..." : "Delete"}</Button></form>
               </div>
             </div>
           ))}

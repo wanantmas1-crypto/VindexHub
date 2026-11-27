@@ -2,6 +2,9 @@ import { getAnalytics } from "@/lib/data";
 import { formatPrice } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function AdminAnalyticsPage() {
   const a = await getAnalytics();
   const maxRevenue = Math.max(1, ...a.topProducts.map((p) => p.revenueCents));

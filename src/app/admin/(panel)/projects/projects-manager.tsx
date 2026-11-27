@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { useRouter } from "next/navigation";
 import { saveProject, deleteProject, type AdminActionState } from "@/lib/admin-actions";
 import type { Project } from "@/lib/db/schema";
 import { Input } from "@/components/ui/input";
@@ -11,10 +12,12 @@ import { parseJsonArray } from "@/lib/utils";
 const initial: AdminActionState = { ok: false, message: "" };
 
 export function ProjectsManager({ initialProjects }: { initialProjects: Project[] }) {
+  const router = useRouter();
   const [editing, setEditing] = useState<Project | null>(null);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
   const [state, action, pending] = useActionState(async (s: AdminActionState, fd: FormData) => {
     const res = await saveProject(s, fd);
-    if (res.ok) setEditing(null);
+    if (res.ok) { setEditing(null); router.refresh(); }
     return res;
   }, initial);
 
@@ -50,7 +53,7 @@ export function ProjectsManager({ initialProjects }: { initialProjects: Project[
               </div>
               <div className="flex gap-2">
                 <Button variant="secondary" size="sm" onClick={() => setEditing(project)}>Edit</Button>
-                <form action={deleteProject}><input type="hidden" name="id" value={project.id} /><Button variant="danger" size="sm" type="submit">Delete</Button></form>
+                <form action={async (fd) => { setDeletingId(project.id); await deleteProject(fd); setDeletingId(null); router.refresh(); }}><input type="hidden" name="id" value={project.id} /><Button variant="danger" size="sm" type="submit" disabled={deletingId === project.id}>{deletingId === project.id ? "Deleting..." : "Delete"}</Button></form>
               </div>
             </div>
           ))}

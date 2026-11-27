@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { useRouter } from "next/navigation";
 import { saveCategory, deleteCategory, type AdminActionState } from "@/lib/admin-actions";
 import type { Category } from "@/lib/db/schema";
 import { Input } from "@/components/ui/input";
@@ -10,10 +11,12 @@ import { Button } from "@/components/ui/button";
 const initial: AdminActionState = { ok: false, message: "" };
 
 export function CategoriesManager({ initialCategories }: { initialCategories: Category[] }) {
+  const router = useRouter();
   const [editing, setEditing] = useState<Category | null>(null);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
   const [state, action, pending] = useActionState(async (s: AdminActionState, fd: FormData) => {
     const res = await saveCategory(s, fd);
-    if (res.ok) setEditing(null);
+    if (res.ok) { setEditing(null); router.refresh(); }
     return res;
   }, initial);
 
@@ -44,7 +47,7 @@ export function CategoriesManager({ initialCategories }: { initialCategories: Ca
               </div>
               <div className="flex gap-2">
                 <Button variant="secondary" size="sm" onClick={() => setEditing(category)}>Edit</Button>
-                <form action={deleteCategory}><input type="hidden" name="id" value={category.id} /><Button variant="danger" size="sm" type="submit">Delete</Button></form>
+                <form action={async (fd) => { setDeletingId(category.id); await deleteCategory(fd); setDeletingId(null); router.refresh(); }}><input type="hidden" name="id" value={category.id} /><Button variant="danger" size="sm" type="submit" disabled={deletingId === category.id}>{deletingId === category.id ? "Deleting..." : "Delete"}</Button></form>
               </div>
             </div>
           ))}

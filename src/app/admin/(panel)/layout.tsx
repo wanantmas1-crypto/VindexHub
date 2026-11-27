@@ -5,6 +5,9 @@ import { getSiteSettings } from "@/lib/data";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LayoutDashboard, Package, Wrench, FolderKanban, Star, Inbox, ShoppingCart, LogOut, Tags, Settings, BarChart3 } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 const nav = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },

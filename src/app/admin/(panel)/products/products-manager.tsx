@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { useRouter } from "next/navigation";
 import { saveProduct, deleteProduct, type AdminActionState } from "@/lib/admin-actions";
 import type { Category } from "@/lib/db/schema";
 import { Input } from "@/components/ui/input";
@@ -31,10 +32,12 @@ type ProductRow = {
 const initial: AdminActionState = { ok: false, message: "" };
 
 export function ProductsManager({ initialProducts, categories }: { initialProducts: ProductRow[]; categories: Category[] }) {
+  const router = useRouter();
   const [editing, setEditing] = useState<ProductRow | null>(null);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
   const [state, action, pending] = useActionState(async (s: AdminActionState, fd: FormData) => {
     const res = await saveProduct(s, fd);
-    if (res.ok) setEditing(null);
+    if (res.ok) { setEditing(null); router.refresh(); }
     return res;
   }, initial);
 
@@ -87,7 +90,7 @@ export function ProductsManager({ initialProducts, categories }: { initialProduc
               </div>
               <div className="flex gap-2">
                 <Button variant="secondary" size="sm" onClick={() => setEditing(product)}>Edit</Button>
-                <form action={deleteProduct}><input type="hidden" name="id" value={product.id} /><Button variant="danger" size="sm" type="submit">Delete</Button></form>
+                <form action={async (fd) => { setDeletingId(product.id); await deleteProduct(fd); setDeletingId(null); router.refresh(); }}><input type="hidden" name="id" value={product.id} /><Button variant="danger" size="sm" type="submit" disabled={deletingId === product.id}>{deletingId === product.id ? "Deleting..." : "Delete"}</Button></form>
               </div>
             </div>
           ))}
