@@ -99,6 +99,17 @@ export async function deleteProduct(formData: FormData) {
   revalidatePath("/");
 }
 
+export async function setProductActive(formData: FormData) {
+  await requireAdminSession();
+  const id = Number(formData.get("id"));
+  const active = String(formData.get("active")) === "true";
+  if (!id) return;
+  await db.update(products).set({ active }).where(eq(products.id, id));
+  revalidatePath("/products");
+  revalidatePath("/admin/products");
+  revalidatePath("/");
+}
+
 export async function saveService(_: AdminActionState, formData: FormData): Promise<AdminActionState> {
   await requireAdminSession();
   const id = formData.get("id") ? Number(formData.get("id")) : null;
@@ -141,6 +152,17 @@ export async function deleteService(formData: FormData) {
   revalidatePath("/admin/services");
 }
 
+export async function setServiceActive(formData: FormData) {
+  await requireAdminSession();
+  const id = Number(formData.get("id"));
+  const active = String(formData.get("active")) === "true";
+  if (!id) return;
+  await db.update(services).set({ active }).where(eq(services.id, id));
+  revalidatePath("/services");
+  revalidatePath("/admin/services");
+  revalidatePath("/");
+}
+
 export async function saveProject(_: AdminActionState, formData: FormData): Promise<AdminActionState> {
   await requireAdminSession();
   const id = formData.get("id") ? Number(formData.get("id")) : null;
@@ -157,6 +179,7 @@ export async function saveProject(_: AdminActionState, formData: FormData): Prom
     demoUrl: data.demoUrl || null,
     repoUrl: data.repoUrl || null,
     featured: data.featured,
+    active: data.active,
   };
   if (id) await db.update(projects).set(values).where(eq(projects.id, id));
   else await db.insert(projects).values(values);
@@ -170,6 +193,17 @@ export async function deleteProject(formData: FormData) {
   await requireAdminSession();
   const id = Number(formData.get("id"));
   if (id) await db.delete(projects).where(eq(projects.id, id));
+  revalidatePath("/projects");
+  revalidatePath("/admin/projects");
+  revalidatePath("/");
+}
+
+export async function setProjectActive(formData: FormData) {
+  await requireAdminSession();
+  const id = Number(formData.get("id"));
+  const active = String(formData.get("active")) === "true";
+  if (!id) return;
+  await db.update(projects).set({ active }).where(eq(projects.id, id));
   revalidatePath("/projects");
   revalidatePath("/admin/projects");
   revalidatePath("/");

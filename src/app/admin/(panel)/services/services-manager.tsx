@@ -2,7 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { useRouter } from "next/navigation";
-import { saveService, deleteService, type AdminActionState } from "@/lib/admin-actions";
+import { saveService, deleteService, setServiceActive, type AdminActionState } from "@/lib/admin-actions";
 import type { Service } from "@/lib/db/schema";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -15,6 +15,7 @@ export function ServicesManager({ initialServices }: { initialServices: Service[
   const router = useRouter();
   const [editing, setEditing] = useState<Service | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [hidingId, setHidingId] = useState<number | null>(null);
   const [state, action, pending] = useActionState(async (s: AdminActionState, fd: FormData) => {
     const res = await saveService(s, fd);
     if (res.ok) { setEditing(null); router.refresh(); }
@@ -53,6 +54,11 @@ export function ServicesManager({ initialServices }: { initialServices: Service[
               </div>
               <div className="flex gap-2">
                 <Button variant="secondary" size="sm" onClick={() => setEditing(service)}>Edit</Button>
+                <form action={async (fd) => { setHidingId(service.id); await setServiceActive(fd); setHidingId(null); router.refresh(); }}>
+                  <input type="hidden" name="id" value={service.id} />
+                  <input type="hidden" name="active" value={service.active ? "false" : "true"} />
+                  <Button variant="secondary" size="sm" type="submit" disabled={hidingId === service.id}>{hidingId === service.id ? "..." : service.active ? "Hide" : "Show"}</Button>
+                </form>
                 <form action={async (fd) => { setDeletingId(service.id); await deleteService(fd); setDeletingId(null); router.refresh(); }}><input type="hidden" name="id" value={service.id} /><Button variant="danger" size="sm" type="submit" disabled={deletingId === service.id}>{deletingId === service.id ? "Deleting..." : "Delete"}</Button></form>
               </div>
             </div>

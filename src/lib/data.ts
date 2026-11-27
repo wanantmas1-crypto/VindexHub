@@ -20,19 +20,19 @@ function logDbError(fn: string, error: unknown) {
 
 export async function getFeaturedProjects() {
   try {
-    return await db.select().from(projects).where(eq(projects.featured, true)).orderBy(desc(projects.createdAt)).limit(3);
+    return await db.select().from(projects).where(and(eq(projects.featured, true), eq(projects.active, true))).orderBy(desc(projects.createdAt)).limit(3);
   } catch (e) { logDbError("getFeaturedProjects", e); return []; }
 }
 
 export async function getProjects() {
   try {
-    return await db.select().from(projects).orderBy(desc(projects.createdAt));
+    return await db.select().from(projects).where(eq(projects.active, true)).orderBy(desc(projects.createdAt));
   } catch (e) { logDbError("getProjects", e); return []; }
 }
 
 export async function getProjectBySlug(slug: string) {
   try {
-    return await db.query.projects.findFirst({ where: eq(projects.slug, slug) });
+    return await db.query.projects.findFirst({ where: and(eq(projects.slug, slug), eq(projects.active, true)) });
   } catch (e) { logDbError("getProjectBySlug", e); return undefined; }
 }
 

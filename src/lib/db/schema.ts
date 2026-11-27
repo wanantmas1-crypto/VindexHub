@@ -21,6 +21,7 @@ export const projects = sqliteTable("projects", {
   demoUrl: text("demo_url"),
   repoUrl: text("repo_url"),
   featured: integer("featured", { mode: "boolean" }).notNull().default(false),
+  active: integer("active", { mode: "boolean" }).notNull().default(true),
   createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });
 

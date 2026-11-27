@@ -66,6 +66,7 @@ export const projectSchema = z.object({
   demoUrl: z.string().url().optional().or(z.literal("")),
   repoUrl: z.string().url().optional().or(z.literal("")),
   featured: z.coerce.boolean().default(false),
+  active: z.coerce.boolean().default(true),
 });
 
 export const checkoutSchema = z.object({
