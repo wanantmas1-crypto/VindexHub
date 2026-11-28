@@ -28,19 +28,24 @@ export async function submitServiceRequest(_: ActionState, formData: FormData): 
   }
 
   const data = parsed.data;
-  await db.insert(serviceRequests).values({
-    serviceId: data.serviceId,
-    name: data.name,
-    email: data.email,
-    company: data.company || null,
-    budget: data.budget || null,
-    timeline: data.timeline || null,
-    message: data.message,
-    status: "new",
-  });
+  try {
+    await db.insert(serviceRequests).values({
+      serviceId: data.serviceId,
+      name: data.name,
+      email: data.email,
+      company: data.company || null,
+      budget: data.budget || null,
+      timeline: data.timeline || null,
+      message: data.message,
+      status: "new",
+    });
 
-  revalidatePath("/admin/requests");
-  return { ok: true, message: "Your service request has been sent. We'll get back to you soon." };
+    revalidatePath("/admin/requests");
+    return { ok: true, message: "Your service request has been sent. We'll get back to you soon." };
+  } catch (error) {
+    console.error("[submitServiceRequest]", error);
+    return { ok: false, message: "Could not send your request right now. Please try again." };
+  }
 }
 
 export async function submitReview(_: ActionState, formData: FormData): Promise<ActionState> {
@@ -55,20 +60,26 @@ export async function submitReview(_: ActionState, formData: FormData): Promise<
     return { ok: false, message: "Review must be linked to a product or service." };
   }
 
-  await db.insert(reviews).values({
-    productId: data.productId ?? null,
-    serviceId: data.serviceId ?? null,
-    authorName: data.authorName,
-    authorEmail: data.authorEmail,
-    rating: data.rating,
-    comment: data.comment,
-    status: "pending",
-    verifiedBuyer: false,
-  } as any);
+  try {
+    await db.insert(reviews).values({
+      productId: data.productId ?? null,
+      serviceId: data.serviceId ?? null,
+      authorName: data.authorName,
+      authorEmail: data.authorEmail,
+      rating: data.rating,
+      comment: data.comment,
+      status: "pending",
+      verifiedBuyer: false,
+      source: "web",
+    } as any);
 
-  revalidatePath("/reviews");
-  revalidatePath("/admin/reviews");
-  return { ok: true, message: "Thank you! Your review was submitted and is pending moderation." };
+    revalidatePath("/reviews");
+    revalidatePath("/admin/reviews");
+    return { ok: true, message: "Thank you! Your review was submitted and is pending moderation." };
+  } catch (error) {
+    console.error("[submitReview]", error);
+    return { ok: false, message: "Could not submit your review right now. Please try again." };
+  }
 }
 
 export type OrderLookupState = {
@@ -248,16 +259,21 @@ export async function submitFeedback(_: ActionState, formData: FormData): Promis
   }
 
   const data = parsed.data;
-  await db.insert(feedbackMessages).values({
-    name: data.name,
-    email: data.email,
-    phone: data.phone || null,
-    subject: data.subject,
-    message: data.message,
-    urgency: data.urgency,
-    status: "new",
-  } as any);
+  try {
+    await db.insert(feedbackMessages).values({
+      name: data.name,
+      email: data.email,
+      phone: data.phone || null,
+      subject: data.subject,
+      message: data.message,
+      urgency: data.urgency,
+      status: "new",
+    } as any);
 
-  revalidatePath("/admin/feedback");
-  return { ok: true, message: data.urgency === "alarm" ? "Your alarm has been sent. Our team will respond urgently." : "Thank you for your feedback. We'll get back to you soon." };
+    revalidatePath("/admin/feedback");
+    return { ok: true, message: data.urgency === "alarm" ? "Your alarm has been sent. Our team will respond urgently." : "Thank you for your feedback. We'll get back to you soon." };
+  } catch (error) {
+    console.error("[submitFeedback]", error);
+    return { ok: false, message: "Could not send your feedback right now. Please try again." };
+  }
 }
