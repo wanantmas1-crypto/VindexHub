@@ -66,11 +66,13 @@ export default async function ProductsPage({ searchParams }: PageProps<"/product
         <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {products.map((product, i) => (
             <article key={product.id} data-reveal style={{ "--reveal-delay": `${i * 70}ms` } as any} className="group hover-lift flex flex-col rounded-2xl border border-border bg-surface p-5 hover:border-primary/20 dark:hover:shadow-none">
-              {product.imageUrl ? (
-                <Image src={product.imageUrl} alt={product.name} width={800} height={500} className="mb-4 h-44 w-full rounded-xl object-cover" />
-              ) : (
-                <div className="mb-4 flex h-44 items-center justify-center rounded-xl bg-primary/10 text-primary"><ShoppingBag className="h-8 w-8" /></div>
-              )}
+              <div className="mb-4 overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-800">
+                {product.imageUrl ? (
+                  <Image src={product.imageUrl} alt={product.name} width={800} height={600} className="aspect-[4/3] w-full object-cover transition duration-500 group-hover:scale-[1.03]" />
+                ) : (
+                  <div className="flex aspect-[4/3] items-center justify-center text-primary"><ShoppingBag className="h-8 w-8" /></div>
+                )}
+              </div>
               <div className="flex items-start justify-between gap-3">
                 <div>
                   {product.categoryName && <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-primary">{product.categoryName}</div>}

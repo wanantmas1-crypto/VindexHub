@@ -69,7 +69,9 @@ export default function CartPage() {
             <div className="space-y-4">
               {items.map((item, i) => (
                 <div key={item.productId} data-reveal style={{ "--reveal-delay": `${i * 60}ms` } as any} className="hover-lift flex flex-col gap-4 rounded-2xl border border-border bg-surface p-4 sm:flex-row sm:items-center">
-                  {item.imageUrl ? <Image src={item.imageUrl} alt={item.name} width={96} height={96} className="h-24 w-24 rounded-xl object-cover" /> : <div className="flex h-24 w-24 items-center justify-center rounded-xl bg-primary/10 text-primary"><ShoppingBag className="h-6 w-6" /></div>}
+                  <div className="h-24 w-24 shrink-0 overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-800">
+                    {item.imageUrl ? <Image src={item.imageUrl} alt={item.name} width={96} height={96} className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-primary"><ShoppingBag className="h-6 w-6" /></div>}
+                  </div>
                   <div className="flex-1">
                     <div className="flex items-start justify-between gap-4">
                       <div>

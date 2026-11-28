@@ -32,13 +32,15 @@ export default async function ProductDetailPage({ params }: PageProps<"/products
       <Container>
         <div className="grid gap-10 lg:grid-cols-2 lg:gap-12">
           <div>
-            {product.imageUrl ? (
-              <Image src={product.imageUrl} alt={product.name} width={1200} height={800} className="rounded-2xl border border-border object-cover shadow-sm" />
-            ) : (
-              <div className="flex aspect-video items-center justify-center rounded-2xl border border-border bg-primary/10 text-primary">
-                <Package className="h-12 w-12" />
-              </div>
-            )}
+            <div className="overflow-hidden rounded-2xl border border-border bg-slate-100 dark:bg-slate-800 shadow-sm">
+              {product.imageUrl ? (
+                <Image src={product.imageUrl} alt={product.name} width={1200} height={900} className="aspect-[4/3] w-full object-cover" />
+              ) : (
+                <div className="flex aspect-[4/3] items-center justify-center text-primary">
+                  <Package className="h-12 w-12" />
+                </div>
+              )}
+            </div>
             {screenshots.length > 0 && (
               <div className="mt-4 grid grid-cols-2 gap-3">
                 {screenshots.slice(0, 4).map((src, i) => (
