@@ -63,33 +63,28 @@ export default async function ProductsPage({ searchParams }: PageProps<"/product
           })}
         </div>
 
-        <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
           {products.map((product, i) => (
-            <article key={product.id} data-reveal style={{ "--reveal-delay": `${i * 70}ms` } as any} className="group hover-lift flex flex-col rounded-2xl border border-border bg-surface p-5 hover:border-primary/20 dark:hover:shadow-none">
-              <div className="mb-4 overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-800">
+            <article key={product.id} data-reveal style={{ "--reveal-delay": `${i * 50}ms` } as any} className="group hover-lift flex flex-col rounded-xl border border-border bg-surface p-3 hover:border-primary/20 dark:hover:shadow-none">
+              <div className="mb-3 overflow-hidden rounded-lg bg-slate-100 dark:bg-slate-800">
                 {product.imageUrl ? (
-                  <Image src={product.imageUrl} alt={product.name} width={800} height={600} className="aspect-[4/3] w-full object-cover transition duration-500 group-hover:scale-[1.03]" unoptimized />
+                  <Image src={product.imageUrl} alt={product.name} width={600} height={450} className="aspect-[4/3] w-full object-cover transition duration-500 group-hover:scale-[1.03]" unoptimized />
                 ) : (
-                  <div className="flex aspect-[4/3] items-center justify-center text-primary"><ShoppingBag className="h-8 w-8" /></div>
+                  <div className="flex aspect-[4/3] items-center justify-center text-primary"><ShoppingBag className="h-7 w-7" /></div>
                 )}
               </div>
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  {product.categoryName && <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-primary">{product.categoryName}</div>}
-                  <h2 className="font-semibold text-lg leading-snug">{product.name}</h2>
-                </div>
-                <div className="shrink-0 text-right">
-                  <span className="rounded-full bg-primary/10 px-2.5 py-1 text-sm font-semibold text-primary">{formatPrice(effectivePriceCents(product.priceCents, product.offerPriceCents), product.currency)}</span>
-                  {product.offerPriceCents != null && product.offerPriceCents < product.priceCents && (
-                    <div className="mt-1 text-xs text-muted line-through">{formatPrice(product.priceCents, product.currency)}</div>
-                  )}
-                </div>
+              {product.categoryName && <div className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-primary">{product.categoryName}</div>}
+              <h2 className="font-semibold text-sm leading-snug line-clamp-2">{product.name}</h2>
+              <p className="mt-1 flex-1 text-xs leading-5 text-muted line-clamp-2">{product.description}</p>
+              <div className="mt-2 flex items-baseline gap-2">
+                <span className="text-sm font-semibold text-primary">{formatPrice(effectivePriceCents(product.priceCents, product.offerPriceCents), product.currency)}</span>
+                {product.offerPriceCents != null && product.offerPriceCents < product.priceCents && (
+                  <span className="text-[11px] text-muted line-through">{formatPrice(product.priceCents, product.currency)}</span>
+                )}
               </div>
-              <p className="mt-2 flex-1 text-sm leading-6 text-muted line-clamp-3">{product.description}</p>
-              <p className="mt-3 text-xs text-muted">Version {product.version} • {product.licenseType}</p>
-              <div className="mt-5 flex flex-col gap-2 sm:flex-row">
-                <AddToCartButton product={{ productId: product.id, slug: product.slug, name: product.name, priceCents: effectivePriceCents(product.priceCents, product.offerPriceCents), currency: product.currency, imageUrl: product.imageUrl }} />
-                <Link href={`/products/${product.slug}`} className="inline-flex h-11 w-full items-center justify-center rounded-xl border border-border px-4 text-sm font-medium text-text transition hover:bg-slate-50 dark:hover:bg-slate-800 sm:w-auto">Details</Link>
+              <div className="mt-3 flex gap-2">
+                <AddToCartButton product={{ productId: product.id, slug: product.slug, name: product.name, priceCents: effectivePriceCents(product.priceCents, product.offerPriceCents), currency: product.currency, imageUrl: product.imageUrl }} size="sm" compact className="flex-1" />
+                <Link href={`/products/${product.slug}`} className="inline-flex h-9 items-center justify-center rounded-xl border border-border px-3 text-xs font-medium text-text transition hover:bg-slate-50 dark:hover:bg-slate-800">View</Link>
               </div>
             </article>
           ))}

@@ -19,19 +19,19 @@ export default async function ServicesPage() {
               <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">Professional Services</h1>
               <p className="mt-3 max-w-2xl leading-7 text-muted">Professional services you can request directly. Tell us what you need and we’ll follow up.</p>
             </div>
-            <div className="mt-10 space-y-6">
+            <div className="mt-10 grid gap-4 sm:grid-cols-2">
               {services.map((service, i) => (
-                <article key={service.id} data-reveal style={{ "--reveal-delay": `${i * 90}ms` } as any} className="hover-lift rounded-2xl border border-border bg-surface p-6 hover:border-primary/20">
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <h2 className="text-xl font-semibold">{service.name}</h2>
-                    <span className="rounded-full bg-primary/10 px-3 py-1 text-sm font-semibold text-primary">From {formatPrice(service.startingPriceCents, service.currency)}</span>
+                <article key={service.id} data-reveal style={{ "--reveal-delay": `${i * 60}ms` } as any} className="hover-lift flex flex-col rounded-xl border border-border bg-surface p-4 hover:border-primary/20">
+                  <div className="flex items-start justify-between gap-2">
+                    <h2 className="font-semibold leading-snug">{service.name}</h2>
+                    <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">From {formatPrice(service.startingPriceCents, service.currency)}</span>
                   </div>
-                  <p className="mt-3 leading-7 text-muted">{service.description}</p>
-                  <ul className="mt-5 grid gap-2.5 text-sm sm:grid-cols-2">
-                    {parseJsonArray<string>(service.deliverables).map((d) => (
-                      <li key={d} className="flex items-start gap-2 text-text">
-                        <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                        <span>{d}</span>
+                  <p className="mt-2 flex-1 text-sm leading-6 text-muted line-clamp-3">{service.description}</p>
+                  <ul className="mt-3 space-y-1.5 text-xs">
+                    {parseJsonArray<string>(service.deliverables).slice(0, 4).map((d) => (
+                      <li key={d} className="flex items-start gap-1.5 text-text">
+                        <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
+                        <span className="line-clamp-1">{d}</span>
                       </li>
                     ))}
                   </ul>

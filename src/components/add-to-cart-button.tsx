@@ -59,7 +59,7 @@ function flyToCart(source: HTMLElement, imageUrl?: string | null) {
   anim.onfinish = () => el.remove();
 }
 
-export function AddToCartButton({ product }: { product: Omit<CartItem, "quantity"> }) {
+export function AddToCartButton({ product, size = "md", className = "w-full sm:w-auto", compact = false }: { product: Omit<CartItem, "quantity">; size?: "sm" | "md" | "lg"; className?: string; compact?: boolean }) {
   const addItem = useCartStore((s) => s.addItem);
   const [added, setAdded] = useState(false);
   const ref = useRef<HTMLButtonElement | null>(null);
@@ -67,16 +67,17 @@ export function AddToCartButton({ product }: { product: Omit<CartItem, "quantity
   return (
     <Button
       ref={ref as any}
+      size={size}
       onClick={() => {
         addItem(product, 1);
         if (ref.current) flyToCart(ref.current, product.imageUrl);
         setAdded(true);
         setTimeout(() => setAdded(false), 1200);
       }}
-      className="w-full sm:w-auto"
+      className={className}
     >
       {added ? <Check className="h-4 w-4" /> : <ShoppingCart className="h-4 w-4" />}
-      {added ? "Added to cart" : "Add to cart"}
+      {compact ? (added ? "Added" : "Add") : (added ? "Added to cart" : "Add to cart")}
     </Button>
   );
 }
