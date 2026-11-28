@@ -38,7 +38,7 @@ export function SiteFooter() {
 
         <div className="mt-6 flex flex-col gap-2 border-t border-border/60 pt-4 text-xs text-muted sm:flex-row sm:items-center sm:justify-between">
           <p>© {new Date().getFullYear()} Vindex Hub. All rights reserved.</p>
-          <p>Built with care in Kenya.</p>
+          <p>Build by Vindex hub</p>
         </div>
       </Container>
     </footer>
