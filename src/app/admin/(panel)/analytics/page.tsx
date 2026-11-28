@@ -11,8 +11,13 @@ export default async function AdminAnalyticsPage() {
 
   return (
     <main>
-      <h1 className="text-2xl font-bold tracking-tight">Analytics</h1>
-      <p className="mt-1 text-muted">Sales, product, review, and service request performance.</p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Analytics</h1>
+          <p className="mt-1 text-muted">Sales, product, review, and service request performance.</p>
+        </div>
+        <a href="/api/admin/reports/analytics" className="inline-flex h-11 items-center justify-center rounded-xl bg-primary px-5 text-sm font-semibold text-white hover:opacity-90">Download PDF Report</a>
+      </div>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Stat label="Revenue (paid)" value={formatPrice(a.revenueCents)} />
