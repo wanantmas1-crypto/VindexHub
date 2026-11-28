@@ -78,7 +78,8 @@ export async function submitReview(_: ActionState, formData: FormData): Promise<
     return { ok: true, message: "Thank you! Your review was submitted and is pending moderation." };
   } catch (error) {
     console.error("[submitReview]", error);
-    return { ok: false, message: "Could not submit your review right now. Please try again." };
+    const detail = error instanceof Error ? error.message : String(error);
+    return { ok: false, message: `Could not submit your review: ${detail.slice(0, 140)}` };
   }
 }
 
@@ -274,6 +275,7 @@ export async function submitFeedback(_: ActionState, formData: FormData): Promis
     return { ok: true, message: data.urgency === "alarm" ? "Your alarm has been sent. Our team will respond urgently." : "Thank you for your feedback. We'll get back to you soon." };
   } catch (error) {
     console.error("[submitFeedback]", error);
-    return { ok: false, message: "Could not send your feedback right now. Please try again." };
+    const detail = error instanceof Error ? error.message : String(error);
+    return { ok: false, message: `Could not send feedback: ${detail.slice(0, 140)}` };
   }
 }
