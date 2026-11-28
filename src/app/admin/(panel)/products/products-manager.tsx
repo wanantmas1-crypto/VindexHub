@@ -47,7 +47,7 @@ export function ProductsManager({ initialProducts, categories }: { initialProduc
       <h1 className="text-2xl font-bold tracking-tight">Products</h1>
       <p className="mt-1 text-muted">Add and manage products.</p>
       <div className="mt-6 grid gap-6 xl:grid-cols-[420px_1fr]">
-        <form action={action} className="rounded-xl border border-border bg-surface p-5 space-y-3 h-fit">
+        <form action={action} encType="multipart/form-data" className="rounded-xl border border-border bg-surface p-5 space-y-3 h-fit">
           <h2 className="font-semibold">{editing ? "Edit Product" : "Add Product"}</h2>
           {editing && <input type="hidden" name="id" value={editing.id} />}
           <Input name="name" placeholder="Name" defaultValue={editing?.name} required />
@@ -64,7 +64,13 @@ export function ProductsManager({ initialProducts, categories }: { initialProduc
             <Input name="currency" placeholder="KES" defaultValue={editing?.currency ?? "KES"} required />
           </div>
           <p className="text-xs text-muted -mt-1">Enter prices in KES. Offer price is optional; if set lower than price, it becomes the active sale price.</p>
-          <Input name="imageUrl" placeholder="Image URL" defaultValue={editing?.imageUrl ?? ""} />
+          <div className="space-y-2">
+            <label className="block text-sm font-medium">Product Image</label>
+            {editing?.imageUrl && <img src={editing.imageUrl} alt="" className="h-24 w-full rounded-lg border border-border object-cover" />}
+            <input name="imageFile" type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml" className="block w-full text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-primary file:px-4 file:py-2 file:text-sm file:font-medium file:text-white hover:file:opacity-90" />
+            <Input name="imageUrl" placeholder="Or paste image URL" defaultValue={editing?.imageUrl ?? ""} />
+            <p className="text-xs text-muted">Upload an image or paste a URL. Uploaded image takes priority.</p>
+          </div>
           <Input name="downloadUrl" placeholder="Download URL / file path" defaultValue={editing?.downloadUrl ?? ""} />
           <Input name="licenseType" placeholder="License type" defaultValue={editing?.licenseType ?? "Standard License"} />
           <Input name="version" placeholder="Version" defaultValue={editing?.version ?? "1.0.0"} />

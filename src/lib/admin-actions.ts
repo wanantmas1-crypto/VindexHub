@@ -52,6 +52,27 @@ export async function saveProduct(_: AdminActionState, formData: FormData): Prom
   const offerPriceCentsRaw = data.offerPriceKes != null ? Math.round(data.offerPriceKes * 100) : null;
   const offerPriceCents =
     offerPriceCentsRaw != null && offerPriceCentsRaw < priceCents ? offerPriceCentsRaw : null;
+
+  let imageUrl = data.imageUrl || null;
+  const imageFile = formData.get("imageFile");
+  if (imageFile instanceof File && imageFile.size > 0) {
+    const allowed = ["image/png", "image/jpeg", "image/webp", "image/gif", "image/svg+xml"];
+    if (!allowed.includes(imageFile.type)) return { ok: false, message: "Image must be PNG, JPG, WEBP, GIF, or SVG." };
+    if (imageFile.size > 5 * 1024 * 1024) return { ok: false, message: "Image must be 5MB or smaller." };
+    const ext = imageFile.type === "image/svg+xml" ? "svg" : imageFile.type === "image/png" ? "png" : imageFile.type === "image/webp" ? "webp" : imageFile.type === "image/gif" ? "gif" : "jpg";
+    const filename = `product-${Date.now()}.${ext}`;
+    if (process.env.BLOB_READ_WRITE_TOKEN) {
+      const blob = await put(`uploads/products/${filename}`, imageFile, { access: "public", contentType: imageFile.type, addRandomSuffix: false });
+      imageUrl = blob.url;
+    } else {
+      const uploadDir = path.join(process.cwd(), "public", "uploads", "products");
+      await mkdir(uploadDir, { recursive: true });
+      const bytes = Buffer.from(await imageFile.arrayBuffer());
+      await writeFile(path.join(uploadDir, filename), bytes);
+      imageUrl = `/uploads/products/${filename}`;
+    }
+  }
+
   const values = {
     categoryId: data.categoryId ? Number(data.categoryId) : null,
     name: data.name,
@@ -61,7 +82,7 @@ export async function saveProduct(_: AdminActionState, formData: FormData): Prom
     priceCents,
     offerPriceCents,
     currency: data.currency.toUpperCase(),
-    imageUrl: data.imageUrl || null,
+    imageUrl,
     fileUrl: data.fileUrl || null,
     downloadUrl: data.downloadUrl || null,
     licenseType: data.licenseType,
