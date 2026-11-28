@@ -2,12 +2,15 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { eq, sql } from "drizzle-orm";
 import { db } from "./db";
 import { categories, feedbackMessages, orderItems, products, projects, reviews, serviceRequests, services, siteSettings } from "./db/schema";
-import { clearAdminSession, createAdminSession, requireAdminSession, verifyAdminCredentials } from "./auth";
+import { clearAdminSession, createAdminSession, getAdminSession, requireAdminSession, verifyAdminCredentials } from "./auth";
 import { categorySchema, productSchema, projectSchema, serviceSchema, siteContactsSchema } from "./validators";
 import { slugify } from "./utils";
+import { getClientIp, rateLimit } from "./rate-limit";
+import { logAudit } from "./audit";
 import { mkdir, writeFile } from "fs/promises";
 import path from "path";
 import { put } from "@vercel/blob";
@@ -23,7 +26,48 @@ function toJsonArray(value?: string) {
   return JSON.stringify(items);
 }
 
+function randomId() {
+  return crypto.randomUUID().replace(/-/g, "").slice(0, 16);
+}
+
+function sniffImageType(buf: Buffer, mime: string) {
+  if (buf.length < 4) return null;
+  if (mime === "image/png" && buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47) return "png";
+  if (mime === "image/jpeg" && buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff) return "jpg";
+  if (mime === "image/webp" && buf.toString("ascii", 0, 4) === "RIFF" && buf.toString("ascii", 8, 12) === "WEBP") return "webp";
+  if (mime === "image/gif" && buf.toString("ascii", 0, 3) === "GIF") return "gif";
+  if (mime === "image/svg+xml") {
+    const head = buf.toString("utf8", 0, Math.min(buf.length, 1024)).toLowerCase();
+    if ((head.includes("<svg") || head.includes("<?xml")) && !head.includes("<script") && !head.includes("javascript:")) return "svg";
+  }
+  return null;
+}
+
+async function saveUploadedImage(file: File, folder: string, maxBytes = 5 * 1024 * 1024) {
+  const allowed = ["image/png", "image/jpeg", "image/webp", "image/gif", "image/svg+xml"];
+  if (!allowed.includes(file.type)) throw new Error("Unsupported image type.");
+  if (file.size > maxBytes) throw new Error("Image is too large.");
+  const buf = Buffer.from(await file.arrayBuffer());
+  const ext = sniffImageType(buf, file.type);
+  if (!ext) throw new Error("Invalid image file content.");
+  const filename = `${folder.replace(/\//g, "-")}-${Date.now()}-${randomId()}.${ext}`;
+  const contentType = ext === "svg" ? "image/svg+xml" : ext === "jpg" ? "image/jpeg" : `image/${ext}`;
+  if (process.env.BLOB_READ_WRITE_TOKEN) {
+    const blob = await put(`uploads/${folder}/${filename}`, buf, { access: "public", contentType, addRandomSuffix: false });
+    return blob.url;
+  }
+  const uploadDir = path.join(process.cwd(), "public", "uploads", folder);
+  await mkdir(uploadDir, { recursive: true });
+  await writeFile(path.join(uploadDir, filename), buf);
+  return `/uploads/${folder}/${filename}`;
+}
+
 export async function adminLogin(_: AdminActionState, formData: FormData): Promise<AdminActionState> {
+  const h = await headers();
+  const ip = getClientIp(h);
+  const rl = rateLimit(`admin-login:${ip}`, 10, 15 * 60 * 1000);
+  if (!rl.ok) return { ok: false, message: "Too many login attempts. Please try again later." };
+
   const email = String(formData.get("email") ?? "");
   const password = String(formData.get("password") ?? "");
   const next = String(formData.get("next") ?? "/admin");
@@ -33,16 +77,20 @@ export async function adminLogin(_: AdminActionState, formData: FormData): Promi
   }
 
   await createAdminSession(email);
+  await logAudit({ actorEmail: email, action: "admin.login", ip });
   redirect(next.startsWith("/admin") ? next : "/admin");
 }
 
 export async function adminLogout() {
+  const session = await getAdminSession().catch(() => null);
+  const h = await headers();
+  await logAudit({ actorEmail: session?.email, action: "admin.logout", ip: getClientIp(h) });
   await clearAdminSession();
   redirect("/admin/login");
 }
 
 export async function saveProduct(_: AdminActionState, formData: FormData): Promise<AdminActionState> {
-  await requireAdminSession();
+  const session = await requireAdminSession();
   const id = formData.get("id") ? Number(formData.get("id")) : null;
   const raw = Object.fromEntries(formData.entries());
   const parsed = productSchema.safeParse(raw);
@@ -56,21 +104,8 @@ export async function saveProduct(_: AdminActionState, formData: FormData): Prom
   let imageUrl = data.imageUrl || null;
   const imageFile = formData.get("imageFile");
   if (imageFile instanceof File && imageFile.size > 0) {
-    const allowed = ["image/png", "image/jpeg", "image/webp", "image/gif", "image/svg+xml"];
-    if (!allowed.includes(imageFile.type)) return { ok: false, message: "Image must be PNG, JPG, WEBP, GIF, or SVG." };
-    if (imageFile.size > 5 * 1024 * 1024) return { ok: false, message: "Image must be 5MB or smaller." };
-    const ext = imageFile.type === "image/svg+xml" ? "svg" : imageFile.type === "image/png" ? "png" : imageFile.type === "image/webp" ? "webp" : imageFile.type === "image/gif" ? "gif" : "jpg";
-    const filename = `product-${Date.now()}.${ext}`;
-    if (process.env.BLOB_READ_WRITE_TOKEN) {
-      const blob = await put(`uploads/products/${filename}`, imageFile, { access: "public", contentType: imageFile.type, addRandomSuffix: false });
-      imageUrl = blob.url;
-    } else {
-      const uploadDir = path.join(process.cwd(), "public", "uploads", "products");
-      await mkdir(uploadDir, { recursive: true });
-      const bytes = Buffer.from(await imageFile.arrayBuffer());
-      await writeFile(path.join(uploadDir, filename), bytes);
-      imageUrl = `/uploads/products/${filename}`;
-    }
+    try { imageUrl = await saveUploadedImage(imageFile, "products", 5 * 1024 * 1024); }
+    catch (e: any) { return { ok: false, message: e?.message || "Invalid image upload." }; }
   }
 
   const values = {
@@ -96,11 +131,13 @@ export async function saveProduct(_: AdminActionState, formData: FormData): Prom
   revalidatePath("/products");
   revalidatePath("/admin/products");
   revalidatePath("/");
+  const h = await headers();
+  await logAudit({ actorEmail: session.email, action: id ? "product.update" : "product.create", targetType: "product", targetId: id ?? data.slug, ip: getClientIp(h) });
   return { ok: true, message: id ? "Product updated." : "Product created." };
 }
 
 export async function deleteProduct(formData: FormData) {
-  await requireAdminSession();
+  const session = await requireAdminSession();
   const id = Number(formData.get("id"));
   if (!id) return;
   try {
@@ -118,10 +155,12 @@ export async function deleteProduct(formData: FormData) {
   revalidatePath("/products");
   revalidatePath("/admin/products");
   revalidatePath("/");
+  const h = await headers();
+  await logAudit({ actorEmail: session.email, action: "product.delete", targetType: "product", targetId: id, ip: getClientIp(h) });
 }
 
 export async function setProductActive(formData: FormData) {
-  await requireAdminSession();
+  const session = await requireAdminSession();
   const id = Number(formData.get("id"));
   const active = String(formData.get("active")) === "true";
   if (!id) return;
@@ -129,6 +168,8 @@ export async function setProductActive(formData: FormData) {
   revalidatePath("/products");
   revalidatePath("/admin/products");
   revalidatePath("/");
+  const h = await headers();
+  await logAudit({ actorEmail: session.email, action: active ? "product.show" : "product.hide", targetType: "product", targetId: id, ip: getClientIp(h) });
 }
 
 export async function saveService(_: AdminActionState, formData: FormData): Promise<AdminActionState> {
@@ -263,32 +304,9 @@ export async function saveReviewScreenshot(_: AdminActionState, formData: FormDa
   if (!(file instanceof File) || file.size === 0) {
     return { ok: false, message: "Please select a screenshot to upload." };
   }
-  const allowed = ["image/png", "image/jpeg", "image/webp"];
-  if (!allowed.includes(file.type)) {
-    return { ok: false, message: "Only PNG, JPG, or WEBP files are allowed." };
-  }
-  if (file.size > 4 * 1024 * 1024) {
-    return { ok: false, message: "Screenshot must be 4MB or smaller." };
-  }
-
-  const ext = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
-  const filename = `review-${id}-${Date.now()}.${ext}`;
-
   let screenshotUrl: string;
-  if (process.env.BLOB_READ_WRITE_TOKEN) {
-    const blob = await put(`uploads/reviews/${filename}`, file, {
-      access: "public",
-      contentType: file.type,
-      addRandomSuffix: false,
-    });
-    screenshotUrl = blob.url;
-  } else {
-    const uploadDir = path.join(process.cwd(), "public", "uploads", "reviews");
-    await mkdir(uploadDir, { recursive: true });
-    const bytes = Buffer.from(await file.arrayBuffer());
-    await writeFile(path.join(uploadDir, filename), bytes);
-    screenshotUrl = `/uploads/reviews/${filename}`;
-  }
+  try { screenshotUrl = await saveUploadedImage(file, "reviews", 4 * 1024 * 1024); }
+  catch (e: any) { return { ok: false, message: e?.message || "Invalid screenshot upload." }; }
 
   await db.update(reviews).set({ screenshotUrl }).where(eq(reviews.id, id));
   revalidatePath("/reviews");
@@ -378,33 +396,9 @@ export async function saveSiteLogo(_: AdminActionState, formData: FormData): Pro
   if (!(file instanceof File) || file.size === 0) {
     return { ok: false, message: "Please select a logo image to upload." };
   }
-
-  const allowed = ["image/png", "image/jpeg", "image/webp", "image/svg+xml"];
-  if (!allowed.includes(file.type)) {
-    return { ok: false, message: "Only PNG, JPG, WEBP, or SVG files are allowed." };
-  }
-  if (file.size > 2 * 1024 * 1024) {
-    return { ok: false, message: "Logo must be 2MB or smaller." };
-  }
-
-  const ext = file.type === "image/svg+xml" ? "svg" : file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
-  const filename = `logo-${Date.now()}.${ext}`;
-
   let logoUrl: string;
-  if (process.env.BLOB_READ_WRITE_TOKEN) {
-    const blob = await put(`uploads/${filename}`, file, {
-      access: "public",
-      contentType: file.type,
-      addRandomSuffix: false,
-    });
-    logoUrl = blob.url;
-  } else {
-    const uploadDir = path.join(process.cwd(), "public", "uploads");
-    await mkdir(uploadDir, { recursive: true });
-    const bytes = Buffer.from(await file.arrayBuffer());
-    await writeFile(path.join(uploadDir, filename), bytes);
-    logoUrl = `/uploads/${filename}`;
-  }
+  try { logoUrl = await saveUploadedImage(file, "branding", 2 * 1024 * 1024); }
+  catch (e: any) { return { ok: false, message: e?.message || "Invalid logo upload." }; }
 
   await db
     .insert(siteSettings)

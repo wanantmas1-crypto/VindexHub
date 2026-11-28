@@ -28,6 +28,8 @@ export async function POST(request: Request) {
         orderId,
         paymentReference: typeof session.payment_intent === "string" ? session.payment_intent : session.payment_intent?.id ?? session.id,
         paymentMethod: "stripe",
+        expectedAmountCents: typeof session.amount_total === "number" ? session.amount_total : null,
+        expectedCurrency: typeof session.currency === "string" ? session.currency.toUpperCase() : null,
       });
     }
   }

@@ -149,6 +149,17 @@ export const feedbackMessages = sqliteTable("feedback_messages", {
   createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });
 
+export const auditLogs = sqliteTable("audit_logs", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  actorEmail: text("actor_email"),
+  action: text("action").notNull(),
+  targetType: text("target_type"),
+  targetId: text("target_id"),
+  detail: text("detail"),
+  ip: text("ip"),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
 export const reviews = sqliteTable("reviews", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   productId: integer("product_id").references(() => products.id),
@@ -175,3 +186,4 @@ export type OrderItem = typeof orderItems.$inferSelect;
 export type Receipt = typeof receipts.$inferSelect;
 export type Review = typeof reviews.$inferSelect;
 export type FeedbackMessage = typeof feedbackMessages.$inferSelect;
+export type AuditLog = typeof auditLogs.$inferSelect;

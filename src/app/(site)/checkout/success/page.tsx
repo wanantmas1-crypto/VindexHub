@@ -24,7 +24,7 @@ export default async function CheckoutSuccessPage({ searchParams }: PageProps<"/
     try {
       const tx = await verifyPaystackTransaction(reference);
       if (tx.status === "success") {
-        await fulfillPaidOrder({ orderId: order!.id, paymentReference: tx.reference, paymentMethod: "paystack" });
+        await fulfillPaidOrder({ orderId: order!.id, paymentReference: tx.reference, paymentMethod: "paystack", expectedAmountCents: Number(tx.amount), expectedCurrency: String(tx.currency) });
         order = await db.query.orders.findFirst({ where: eq(orders.id, id) });
       }
     } catch (e) {

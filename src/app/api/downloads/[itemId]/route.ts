@@ -2,8 +2,12 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { orderItems, orders } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
+import { getClientIp, rateLimit } from "@/lib/rate-limit";
 
 export async function GET(request: Request, { params }: { params: Promise<{ itemId: string }> }) {
+  const ip = getClientIp(request.headers);
+  const rl = rateLimit(`dl:${ip}`, 30, 10 * 60 * 1000);
+  if (!rl.ok) return NextResponse.json({ error: "Too many requests" }, { status: 429 });
   const { itemId } = await params;
   const id = Number(itemId);
   const token = new URL(request.url).searchParams.get("token");

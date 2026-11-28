@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { eq, sql } from "drizzle-orm";
 import { db } from "./db";
 import { feedbackMessages, orders, orderItems, products, reviews, serviceRequests, services } from "./db/schema";
@@ -9,6 +10,7 @@ import { checkoutSchema, feedbackSchema, reviewSchema, serviceRequestSchema } fr
 import { getStripe, isStripeConfigured } from "./stripe";
 import { createDownloadToken } from "./orders";
 import { isPaystackConfigured, initializePaystackTransaction } from "./paystack";
+import { getClientIp, rateLimit } from "./rate-limit";
 
 export type ActionState = {
   ok: boolean;
@@ -21,6 +23,9 @@ export type ActionState = {
 };
 
 export async function submitServiceRequest(_: ActionState, formData: FormData): Promise<ActionState> {
+  const h = await headers();
+  const rl = rateLimit(`svc-req:${getClientIp(h)}`, 5, 10 * 60 * 1000);
+  if (!rl.ok) return { ok: false, message: "Too many requests. Please try again later." };
   const raw = Object.fromEntries(formData.entries());
   const parsed = serviceRequestSchema.safeParse(raw);
   if (!parsed.success) {
@@ -49,6 +54,9 @@ export async function submitServiceRequest(_: ActionState, formData: FormData): 
 }
 
 export async function submitReview(_: ActionState, formData: FormData): Promise<ActionState> {
+  const h = await headers();
+  const rl = rateLimit(`review:${getClientIp(h)}`, 5, 10 * 60 * 1000);
+  if (!rl.ok) return { ok: false, message: "Too many requests. Please try again later." };
   const raw = Object.fromEntries(formData.entries());
   const parsed = reviewSchema.safeParse(raw);
   if (!parsed.success) {
@@ -111,6 +119,9 @@ export type OrderLookupState = {
 };
 
 export async function lookupOrder(_: OrderLookupState, formData: FormData): Promise<OrderLookupState> {
+  const h = await headers();
+  const rl = rateLimit(`order-lookup:${getClientIp(h)}`, 20, 10 * 60 * 1000);
+  if (!rl.ok) return { ok: false, message: "Too many requests. Please try again later." };
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const orderId = Number(formData.get("orderId"));
   if (!email || !Number.isFinite(orderId)) return { ok: false, message: "Enter a valid email and order ID." };
@@ -130,6 +141,9 @@ export async function lookupOrder(_: OrderLookupState, formData: FormData): Prom
 
 export async function createCheckout(_: ActionState, formData: FormData): Promise<ActionState> {
   try {
+    const h = await headers();
+    const rl = rateLimit(`checkout:${getClientIp(h)}`, 15, 10 * 60 * 1000);
+    if (!rl.ok) return { ok: false, message: "Too many checkout attempts. Please try again later." };
     const email = String(formData.get("email") ?? "");
     const phone = String(formData.get("phone") ?? "");
     const paymentMethod = String(formData.get("paymentMethod") ?? "");
@@ -273,6 +287,9 @@ export async function createCheckout(_: ActionState, formData: FormData): Promis
 }
 
 export async function submitFeedback(_: ActionState, formData: FormData): Promise<ActionState> {
+  const h = await headers();
+  const rl = rateLimit(`feedback:${getClientIp(h)}`, 5, 10 * 60 * 1000);
+  if (!rl.ok) return { ok: false, message: "Too many requests. Please try again later." };
   const raw = Object.fromEntries(formData.entries());
   const parsed = feedbackSchema.safeParse(raw);
   if (!parsed.success) {

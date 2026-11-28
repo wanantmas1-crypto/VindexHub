@@ -15,7 +15,7 @@ export async function createAdminSession(email: string) {
   const token = await new SignJWT({ email, role: "admin" })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
-    .setExpirationTime("7d")
+    .setExpirationTime("24h")
     .sign(getSecret());
 
   const cookieStore = await cookies();
@@ -24,7 +24,7 @@ export async function createAdminSession(email: string) {
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
     path: "/",
-    maxAge: 60 * 60 * 24 * 7,
+    maxAge: 60 * 60 * 24,
   });
 }
 

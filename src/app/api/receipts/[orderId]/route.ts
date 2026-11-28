@@ -3,10 +3,14 @@ import { db } from "@/lib/db";
 import { orderItems, orders, receipts } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { generateReceiptPdf } from "@/lib/pdf";
+import { getClientIp, rateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
 export async function GET(request: Request, { params }: { params: Promise<{ orderId: string }> }) {
+  const ip = getClientIp(request.headers);
+  const rl = rateLimit(`receipt:${ip}`, 30, 10 * 60 * 1000);
+  if (!rl.ok) return NextResponse.json({ error: "Too many requests" }, { status: 429 });
   const { orderId } = await params;
   const id = Number(orderId);
   const url = new URL(request.url);

@@ -10,6 +10,8 @@ export type FulfillPaymentInput = {
   paymentReference?: string | null;
   phone?: string | null;
   paymentMethod?: string | null;
+  expectedAmountCents?: number | null;
+  expectedCurrency?: string | null;
 };
 
 /**
@@ -29,6 +31,13 @@ export async function fulfillPaidOrder(input: FulfillPaymentInput) {
 
     if (order.status !== "pending") {
       throw new Error(`Order cannot be fulfilled from status ${order.status}`);
+    }
+
+    if (input.expectedAmountCents != null && Number(input.expectedAmountCents) !== Number(order.totalCents)) {
+      throw new Error("Payment amount mismatch");
+    }
+    if (input.expectedCurrency && String(input.expectedCurrency).toUpperCase() !== String(order.currency).toUpperCase()) {
+      throw new Error("Payment currency mismatch");
     }
 
     const paidAt = new Date().toISOString();
