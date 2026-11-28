@@ -87,11 +87,12 @@ export async function submitReview(_: ActionState, formData: FormData): Promise<
     return { ok: true, message: "Thank you! Your review was submitted and is pending moderation." };
   } catch (error) {
     console.error("[submitReview]", error);
-    const cause = (error as any)?.cause?.message || (error instanceof Error ? error.message : String(error));
-    if (String(cause).toLowerCase().includes("foreign key")) {
+    const detail = error instanceof Error ? error.message : String(error);
+    const cause = (error as any)?.cause?.message ? ` | ${(error as any).cause.message}` : "";
+    if (String(detail + cause).toLowerCase().includes("foreign key")) {
       return { ok: false, message: "This product/service is no longer available for review." };
     }
-    return { ok: false, message: "Could not submit your review right now. Please try again." };
+    return { ok: false, message: `Could not submit review: ${(detail + cause).slice(0, 280)}` };
   }
 }
 
