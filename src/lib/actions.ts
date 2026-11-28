@@ -79,7 +79,8 @@ export async function submitReview(_: ActionState, formData: FormData): Promise<
   } catch (error) {
     console.error("[submitReview]", error);
     const detail = error instanceof Error ? error.message : String(error);
-    return { ok: false, message: `Could not submit your review: ${detail.slice(0, 140)}` };
+    const cause = (error as any)?.cause?.message ? ` | ${(error as any).cause.message}` : "";
+    return { ok: false, message: `Could not submit your review: ${(detail + cause).slice(0, 300)}` };
   }
 }
 
