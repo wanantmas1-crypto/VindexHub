@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { eq } from "drizzle-orm";
 import { db } from "./db";
-import { feedbackMessages, orders, orderItems, reviews, serviceRequests } from "./db/schema";
+import { feedbackMessages, orders, orderItems, products, reviews, serviceRequests, services } from "./db/schema";
 import { checkoutSchema, feedbackSchema, reviewSchema, serviceRequestSchema } from "./validators";
 import { getStripe, isStripeConfigured } from "./stripe";
 import { createDownloadToken } from "./orders";
@@ -61,6 +61,15 @@ export async function submitReview(_: ActionState, formData: FormData): Promise<
   }
 
   try {
+    if (data.productId) {
+      const [p] = await db.select({ id: products.id }).from(products).where(eq(products.id, data.productId)).limit(1);
+      if (!p) return { ok: false, message: "This product is no longer available for review." };
+    }
+    if (data.serviceId) {
+      const [s] = await db.select({ id: services.id }).from(services).where(eq(services.id, data.serviceId)).limit(1);
+      if (!s) return { ok: false, message: "This service is no longer available for review." };
+    }
+
     await db.insert(reviews).values({
       productId: data.productId ?? null,
       serviceId: data.serviceId ?? null,
@@ -78,9 +87,11 @@ export async function submitReview(_: ActionState, formData: FormData): Promise<
     return { ok: true, message: "Thank you! Your review was submitted and is pending moderation." };
   } catch (error) {
     console.error("[submitReview]", error);
-    const detail = error instanceof Error ? error.message : String(error);
-    const cause = (error as any)?.cause?.message ? ` | ${(error as any).cause.message}` : "";
-    return { ok: false, message: `Could not submit your review: ${(detail + cause).slice(0, 300)}` };
+    const cause = (error as any)?.cause?.message || (error instanceof Error ? error.message : String(error));
+    if (String(cause).toLowerCase().includes("foreign key")) {
+      return { ok: false, message: "This product/service is no longer available for review." };
+    }
+    return { ok: false, message: "Could not submit your review right now. Please try again." };
   }
 }
 
@@ -276,7 +287,6 @@ export async function submitFeedback(_: ActionState, formData: FormData): Promis
     return { ok: true, message: data.urgency === "alarm" ? "Your alarm has been sent. Our team will respond urgently." : "Thank you for your feedback. We'll get back to you soon." };
   } catch (error) {
     console.error("[submitFeedback]", error);
-    const detail = error instanceof Error ? error.message : String(error);
-    return { ok: false, message: `Could not send feedback: ${detail.slice(0, 140)}` };
+    return { ok: false, message: "Could not send your feedback right now. Please try again." };
   }
 }
