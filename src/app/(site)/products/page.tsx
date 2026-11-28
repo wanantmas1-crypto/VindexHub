@@ -68,7 +68,7 @@ export default async function ProductsPage({ searchParams }: PageProps<"/product
             <article key={product.id} data-reveal style={{ "--reveal-delay": `${i * 70}ms` } as any} className="group hover-lift flex flex-col rounded-2xl border border-border bg-surface p-5 hover:border-primary/20 dark:hover:shadow-none">
               <div className="mb-4 overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-800">
                 {product.imageUrl ? (
-                  <Image src={product.imageUrl} alt={product.name} width={800} height={600} className="aspect-[4/3] w-full object-cover transition duration-500 group-hover:scale-[1.03]" />
+                  <Image src={product.imageUrl} alt={product.name} width={800} height={600} className="aspect-[4/3] w-full object-cover transition duration-500 group-hover:scale-[1.03]" unoptimized />
                 ) : (
                   <div className="flex aspect-[4/3] items-center justify-center text-primary"><ShoppingBag className="h-8 w-8" /></div>
                 )}

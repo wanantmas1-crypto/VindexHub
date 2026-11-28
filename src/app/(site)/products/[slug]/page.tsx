@@ -34,7 +34,7 @@ export default async function ProductDetailPage({ params }: PageProps<"/products
           <div>
             <div className="overflow-hidden rounded-2xl border border-border bg-slate-100 dark:bg-slate-800 shadow-sm">
               {product.imageUrl ? (
-                <Image src={product.imageUrl} alt={product.name} width={1200} height={900} className="aspect-[4/3] w-full object-cover" />
+                <Image src={product.imageUrl} alt={product.name} width={1200} height={900} className="aspect-[4/3] w-full object-cover" unoptimized />
               ) : (
                 <div className="flex aspect-[4/3] items-center justify-center text-primary">
                   <Package className="h-12 w-12" />
@@ -44,7 +44,7 @@ export default async function ProductDetailPage({ params }: PageProps<"/products
             {screenshots.length > 0 && (
               <div className="mt-4 grid grid-cols-2 gap-3">
                 {screenshots.slice(0, 4).map((src, i) => (
-                  <Image key={i} src={src} alt={`${product.name} screenshot ${i + 1}`} width={600} height={400} className="rounded-xl border border-border object-cover" />
+                  <Image key={i} src={src} alt={`${product.name} screenshot ${i + 1}`} width={600} height={400} className="rounded-xl border border-border object-cover" unoptimized />
                 ))}
               </div>
             )}
