@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { db } from "./db";
 import { categories, feedbackMessages, orderItems, products, projects, reviews, serviceRequests, services, siteSettings } from "./db/schema";
 import { clearAdminSession, createAdminSession, requireAdminSession, verifyAdminCredentials } from "./auth";
@@ -430,7 +430,23 @@ export async function saveSiteContacts(_: AdminActionState, formData: FormData):
     showContacts: d.showContacts,
     updatedAt: new Date().toISOString(),
   };
-  await db.insert(siteSettings).values(values as any).onConflictDoUpdate({ target: siteSettings.id, set: values as any });
+  try {
+    await db.insert(siteSettings).values(values as any).onConflictDoUpdate({ target: siteSettings.id, set: values as any });
+  } catch (e: any) {
+    const msg = String(e?.cause?.message || e?.message || e).toLowerCase();
+    if (msg.includes("no column named contact_") || msg.includes("no column named show_contacts") || msg.includes("has no column named")) {
+      for (const stmt of [
+        "ALTER TABLE site_settings ADD COLUMN contact_email TEXT",
+        "ALTER TABLE site_settings ADD COLUMN contact_phone TEXT",
+        "ALTER TABLE site_settings ADD COLUMN contact_whatsapp TEXT",
+        "ALTER TABLE site_settings ADD COLUMN contact_address TEXT",
+        "ALTER TABLE site_settings ADD COLUMN show_contacts INTEGER NOT NULL DEFAULT 1",
+      ]) {
+        try { await db.run(sql.raw(stmt)); } catch (err: any) { const m = String(err?.cause?.message || err?.message || err).toLowerCase(); if (!m.includes("duplicate column")) throw err; }
+      }
+      await db.insert(siteSettings).values(values as any).onConflictDoUpdate({ target: siteSettings.id, set: values as any });
+    } else throw e;
+  }
   revalidatePath("/", "layout");
   revalidatePath("/feedback");
   revalidatePath("/admin/settings");

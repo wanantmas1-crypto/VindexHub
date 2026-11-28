@@ -39,13 +39,25 @@ export async function getProjectBySlug(slug: string) {
 
 export async function getSiteSettings() {
   const fallback = {
-    id: 1, logoUrl: null, contactEmail: null, contactPhone: null, contactWhatsapp: null,
-    contactAddress: null, showContacts: true, updatedAt: "",
+    id: 1, logoUrl: null as string | null, contactEmail: null as string | null, contactPhone: null as string | null,
+    contactWhatsapp: null as string | null, contactAddress: null as string | null, showContacts: true, updatedAt: "",
   };
   try {
     const row = await db.query.siteSettings.findFirst({ where: eq(siteSettings.id, 1) });
     return row ?? fallback;
-  } catch (e) { logDbError("getSiteSettings", e); return fallback; }
+  } catch (e) {
+    const msg = String((e as any)?.cause?.message || (e as any)?.message || e).toLowerCase();
+    if (msg.includes("no column named contact_") || msg.includes("no column named show_contacts") || msg.includes("has no column named")) {
+      try {
+        const r = await db.run(sql`SELECT id, logo_url, updated_at FROM site_settings WHERE id = 1 LIMIT 1`);
+        const row = (r.rows?.[0] as any) ?? null;
+        if (!row) return fallback;
+        return { ...fallback, id: Number(row.id ?? 1), logoUrl: row.logo_url ?? null, updatedAt: String(row.updated_at ?? "") };
+      } catch (e2) { logDbError("getSiteSettings.fallback", e2); return fallback; }
+    }
+    logDbError("getSiteSettings", e);
+    return fallback;
+  }
 }
 
 export async function getAllFeedbackMessages() {
