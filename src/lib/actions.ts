@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { db } from "./db";
 import { feedbackMessages, orders, orderItems, products, reviews, serviceRequests, services } from "./db/schema";
 import { checkoutSchema, feedbackSchema, reviewSchema, serviceRequestSchema } from "./validators";
@@ -70,17 +70,24 @@ export async function submitReview(_: ActionState, formData: FormData): Promise<
       if (!s) return { ok: false, message: "This service is no longer available for review." };
     }
 
-    await db.insert(reviews).values({
+    const base = {
       productId: data.productId ?? null,
       serviceId: data.serviceId ?? null,
       authorName: data.authorName,
       authorEmail: data.authorEmail,
       rating: data.rating,
       comment: data.comment,
-      status: "pending",
+      status: "pending" as const,
       verifiedBuyer: false,
-      source: "web",
-    } as any);
+    };
+    try {
+      await db.insert(reviews).values({ ...base, source: "web" } as any);
+    } catch (e: any) {
+      const msg = String(e?.cause?.message || e?.message || e).toLowerCase();
+      if (msg.includes("no column named source") || msg.includes("no column named screenshot_url") || msg.includes("has no column named")) {
+        await db.run(sql`INSERT INTO reviews (product_id, service_id, author_name, author_email, rating, comment, status, verified_buyer) VALUES (${base.productId}, ${base.serviceId}, ${base.authorName}, ${base.authorEmail}, ${base.rating}, ${base.comment}, ${base.status}, ${base.verifiedBuyer ? 1 : 0})`);
+      } else throw e;
+    }
 
     revalidatePath("/reviews");
     revalidatePath("/admin/reviews");
