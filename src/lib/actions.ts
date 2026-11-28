@@ -91,7 +91,7 @@ export async function submitReview(_: ActionState, formData: FormData): Promise<
 
     revalidatePath("/reviews");
     revalidatePath("/admin/reviews");
-    return { ok: true, message: "Thank you! Your review was submitted and is pending moderation." };
+    return { ok: true, message: "Thank you! Your review has been submitted." };
   } catch (error) {
     console.error("[submitReview]", error);
     const detail = error instanceof Error ? error.message : String(error);
