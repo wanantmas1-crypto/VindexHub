@@ -4,9 +4,9 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { eq } from "drizzle-orm";
 import { db } from "./db";
-import { categories, orderItems, products, projects, reviews, serviceRequests, services, siteSettings } from "./db/schema";
+import { categories, feedbackMessages, orderItems, products, projects, reviews, serviceRequests, services, siteSettings } from "./db/schema";
 import { clearAdminSession, createAdminSession, requireAdminSession, verifyAdminCredentials } from "./auth";
-import { categorySchema, productSchema, projectSchema, serviceSchema } from "./validators";
+import { categorySchema, productSchema, projectSchema, serviceSchema, siteContactsSchema } from "./validators";
 import { slugify } from "./utils";
 import { mkdir, writeFile } from "fs/promises";
 import path from "path";
@@ -393,4 +393,34 @@ export async function saveSiteLogo(_: AdminActionState, formData: FormData): Pro
   revalidatePath("/", "layout");
   revalidatePath("/admin/settings");
   return { ok: true, message: "Logo uploaded successfully." };
+}
+
+export async function saveSiteContacts(_: AdminActionState, formData: FormData): Promise<AdminActionState> {
+  await requireAdminSession();
+  const parsed = siteContactsSchema.safeParse(Object.fromEntries(formData.entries()));
+  if (!parsed.success) return { ok: false, message: parsed.error.issues[0]?.message ?? "Invalid contact settings." };
+  const d = parsed.data;
+  const values = {
+    id: 1,
+    contactEmail: d.contactEmail || null,
+    contactPhone: d.contactPhone || null,
+    contactWhatsapp: d.contactWhatsapp || null,
+    contactAddress: d.contactAddress || null,
+    showContacts: d.showContacts,
+    updatedAt: new Date().toISOString(),
+  };
+  await db.insert(siteSettings).values(values as any).onConflictDoUpdate({ target: siteSettings.id, set: values as any });
+  revalidatePath("/", "layout");
+  revalidatePath("/feedback");
+  revalidatePath("/admin/settings");
+  return { ok: true, message: "Contact settings saved." };
+}
+
+export async function setFeedbackStatus(formData: FormData) {
+  await requireAdminSession();
+  const id = Number(formData.get("id"));
+  const status = String(formData.get("status"));
+  if (!id || !["new","in_review","resolved","closed"].includes(status)) return;
+  await db.update(feedbackMessages).set({ status }).where(eq(feedbackMessages.id, id));
+  revalidatePath("/admin/feedback");
 }

@@ -4,8 +4,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { eq } from "drizzle-orm";
 import { db } from "./db";
-import { orders, orderItems, reviews, serviceRequests } from "./db/schema";
-import { checkoutSchema, reviewSchema, serviceRequestSchema } from "./validators";
+import { feedbackMessages, orders, orderItems, reviews, serviceRequests } from "./db/schema";
+import { checkoutSchema, feedbackSchema, reviewSchema, serviceRequestSchema } from "./validators";
 import { getStripe, isStripeConfigured } from "./stripe";
 import { createDownloadToken } from "./orders";
 import { isPaystackConfigured, initializePaystackTransaction } from "./paystack";
@@ -238,4 +238,26 @@ export async function createCheckout(_: ActionState, formData: FormData): Promis
     console.error(error);
     return { ok: false, message: "Checkout failed. Please try again." };
   }
+}
+
+export async function submitFeedback(_: ActionState, formData: FormData): Promise<ActionState> {
+  const raw = Object.fromEntries(formData.entries());
+  const parsed = feedbackSchema.safeParse(raw);
+  if (!parsed.success) {
+    return { ok: false, message: "Please fix the form errors.", errors: parsed.error.flatten().fieldErrors };
+  }
+
+  const data = parsed.data;
+  await db.insert(feedbackMessages).values({
+    name: data.name,
+    email: data.email,
+    phone: data.phone || null,
+    subject: data.subject,
+    message: data.message,
+    urgency: data.urgency,
+    status: "new",
+  } as any);
+
+  revalidatePath("/admin/feedback");
+  return { ok: true, message: data.urgency === "alarm" ? "Your alarm has been sent. Our team will respond urgently." : "Thank you for your feedback. We'll get back to you soon." };
 }

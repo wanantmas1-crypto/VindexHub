@@ -4,6 +4,7 @@ import { desc, eq, sql, and } from "drizzle-orm";
 import { db } from "./db";
 import {
   categories,
+  feedbackMessages,
   orderItems,
   orders,
   products,
@@ -37,10 +38,19 @@ export async function getProjectBySlug(slug: string) {
 }
 
 export async function getSiteSettings() {
+  const fallback = {
+    id: 1, logoUrl: null, contactEmail: null, contactPhone: null, contactWhatsapp: null,
+    contactAddress: null, showContacts: true, updatedAt: "",
+  };
   try {
     const row = await db.query.siteSettings.findFirst({ where: eq(siteSettings.id, 1) });
-    return row ?? { id: 1, logoUrl: null, updatedAt: "" };
-  } catch (e) { logDbError("getSiteSettings", e); return { id: 1, logoUrl: null, updatedAt: "" }; }
+    return row ?? fallback;
+  } catch (e) { logDbError("getSiteSettings", e); return fallback; }
+}
+
+export async function getAllFeedbackMessages() {
+  try { return await db.select().from(feedbackMessages).orderBy(desc(feedbackMessages.createdAt)); }
+  catch (e) { logDbError("getAllFeedbackMessages", e); return []; }
 }
 
 export async function getActiveCategories() {

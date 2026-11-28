@@ -11,6 +11,7 @@ const nav = [
   { href: "/services", label: "Services" },
   { href: "/reviews", label: "Reviews" },
   { href: "/projects", label: "Projects" },
+  { href: "/feedback", label: "Feedback" },
 ];
 
 export async function SiteHeader() {

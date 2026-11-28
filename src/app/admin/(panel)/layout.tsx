@@ -3,7 +3,7 @@ import Image from "next/image";
 import { adminLogout } from "@/lib/admin-actions";
 import { getSiteSettings } from "@/lib/data";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { LayoutDashboard, Package, Wrench, FolderKanban, Star, Inbox, ShoppingCart, LogOut, Tags, Settings, BarChart3 } from "lucide-react";
+import { LayoutDashboard, Package, Wrench, FolderKanban, Star, Inbox, ShoppingCart, LogOut, Tags, Settings, BarChart3, MessageSquareWarning } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -17,6 +17,7 @@ const nav = [
   { href: "/admin/projects", label: "Projects", icon: FolderKanban },
   { href: "/admin/reviews", label: "Reviews", icon: Star },
   { href: "/admin/requests", label: "Requests", icon: Inbox },
+  { href: "/admin/feedback", label: "Feedback", icon: MessageSquareWarning },
   { href: "/admin/orders", label: "Orders", icon: ShoppingCart },
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ];

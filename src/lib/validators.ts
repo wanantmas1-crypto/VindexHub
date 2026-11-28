@@ -82,3 +82,20 @@ export const checkoutSchema = z.object({
     )
     .min(1),
 });
+
+export const feedbackSchema = z.object({
+  name: z.string().min(2, "Name is required").max(100),
+  email: z.string().email("Valid email is required"),
+  phone: z.string().max(40).optional().or(z.literal("")),
+  subject: z.string().min(3, "Subject is required").max(160),
+  message: z.string().min(10, "Please provide more detail").max(3000),
+  urgency: z.enum(["normal", "urgent", "alarm"]).default("normal"),
+});
+
+export const siteContactsSchema = z.object({
+  contactEmail: z.string().email().optional().or(z.literal("")),
+  contactPhone: z.string().max(60).optional().or(z.literal("")),
+  contactWhatsapp: z.string().max(60).optional().or(z.literal("")),
+  contactAddress: z.string().max(200).optional().or(z.literal("")),
+  showContacts: z.preprocess((v) => v === "on" || v === "true" || v === true, z.boolean()),
+});

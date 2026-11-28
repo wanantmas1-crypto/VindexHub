@@ -129,7 +129,24 @@ export const receipts = sqliteTable("receipts", {
 export const siteSettings = sqliteTable("site_settings", {
   id: integer("id").primaryKey(),
   logoUrl: text("logo_url"),
+  contactEmail: text("contact_email"),
+  contactPhone: text("contact_phone"),
+  contactWhatsapp: text("contact_whatsapp"),
+  contactAddress: text("contact_address"),
+  showContacts: integer("show_contacts", { mode: "boolean" }).notNull().default(true),
   updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const feedbackMessages = sqliteTable("feedback_messages", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  name: text("name").notNull(),
+  email: text("email").notNull(),
+  phone: text("phone"),
+  subject: text("subject").notNull(),
+  message: text("message").notNull(),
+  urgency: text("urgency").notNull().default("normal"), // normal | urgent | alarm
+  status: text("status").notNull().default("new"), // new | in_review | resolved | closed
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });
 
 export const reviews = sqliteTable("reviews", {
@@ -157,3 +174,4 @@ export type Order = typeof orders.$inferSelect;
 export type OrderItem = typeof orderItems.$inferSelect;
 export type Receipt = typeof receipts.$inferSelect;
 export type Review = typeof reviews.$inferSelect;
+export type FeedbackMessage = typeof feedbackMessages.$inferSelect;
