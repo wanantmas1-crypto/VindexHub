@@ -281,7 +281,7 @@ export async function submitFeedback(_: ActionState, formData: FormData): Promis
 
   const data = parsed.data;
   try {
-    await db.insert(feedbackMessages).values({
+    const values = {
       name: data.name,
       email: data.email,
       phone: data.phone || null,
@@ -289,7 +289,26 @@ export async function submitFeedback(_: ActionState, formData: FormData): Promis
       message: data.message,
       urgency: data.urgency,
       status: "new",
-    } as any);
+    } as any;
+    try {
+      await db.insert(feedbackMessages).values(values);
+    } catch (e: any) {
+      const msg = String(e?.cause?.message || e?.message || e).toLowerCase();
+      if (msg.includes("no such table: feedback_messages")) {
+        await db.run(sql`CREATE TABLE IF NOT EXISTS feedback_messages (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL,
+          email TEXT NOT NULL,
+          phone TEXT,
+          subject TEXT NOT NULL,
+          message TEXT NOT NULL,
+          urgency TEXT NOT NULL DEFAULT 'normal',
+          status TEXT NOT NULL DEFAULT 'new',
+          created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )`);
+        await db.insert(feedbackMessages).values(values);
+      } else throw e;
+    }
 
     revalidatePath("/admin/feedback");
     return { ok: true, message: data.urgency === "alarm" ? "Your alarm has been sent. Our team will respond urgently." : "Thank you for your feedback. We'll get back to you soon." };
