@@ -92,7 +92,7 @@ export async function submitReview(_: ActionState, formData: FormData): Promise<
     if (String(detail + cause).toLowerCase().includes("foreign key")) {
       return { ok: false, message: "This product/service is no longer available for review." };
     }
-    return { ok: false, message: `Could not submit review: ${(detail + cause).slice(0, 280)}` };
+    return { ok: false, message: `Could not submit review: ${(cause + " || " + detail).slice(0, 400)}` };
   }
 }
 
